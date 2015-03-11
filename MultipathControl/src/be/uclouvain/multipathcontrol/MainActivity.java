@@ -35,7 +35,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.ToggleButton;
 
-public class Main extends Activity {
+public class MainActivity extends Activity {
 
 	public static final String PREFS_NAME = "MultipathControl";
 	private HashMap<String, Integer> mIntfState;
@@ -112,7 +112,7 @@ public class Main extends Activity {
 
 	private void showNotification() {
 		NotificationManager mNotification = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		Intent intent = new Intent(this, Main.class);
+		Intent intent = new Intent(this, MainActivity.class);
 		PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, intent, 0);
 
 		Notification notif = new Notification.Builder(this)
