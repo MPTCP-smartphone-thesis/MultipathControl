@@ -30,6 +30,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ToggleButton;
@@ -57,12 +58,12 @@ public class Main extends Activity {
 		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 
 		b = (ToggleButton) findViewById(R.id.enable_multiiface);
-		mEnabled = settings.getBoolean("enableMultiInterfaces", false);		
+		mEnabled = settings.getBoolean("enableMultiInterfaces", false);
 		b.setChecked(mEnabled);
-		if (mEnabled)
-			showNotification();
 
 		initInterfaces();
+		if (mEnabled)
+			showNotification();
 
 		mThread = new Thread(new CheckMobileData());
 		mThread.start();
@@ -202,8 +203,10 @@ public class Main extends Activity {
 	}
 
 	public void runAsRoot(String[] cmds) throws Exception {
-		for (String cmd : cmds)
+		for (String cmd : cmds) {
+			Log.d("mpctrl", "command: " + cmd);
 			Runtime.getRuntime().exec(new String[] {"su", "-c", cmd});
+		}
 	}
 
 	private InetAddress toSubnet(InetAddress addr, int prefix) throws UnknownHostException {
