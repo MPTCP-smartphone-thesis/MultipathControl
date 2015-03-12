@@ -33,7 +33,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.widget.ToggleButton;
+import android.widget.Switch;
 
 public class MainActivity extends Activity {
 
@@ -41,7 +41,6 @@ public class MainActivity extends Activity {
 	private HashMap<String, Integer> mIntfState;
 	private static boolean mEnabled;
 	private Thread mThread;
-	private ToggleButton b;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 		@Override
@@ -57,9 +56,9 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.main);
 		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 
-		b = (ToggleButton) findViewById(R.id.enable_multiiface);
 		mEnabled = settings.getBoolean("enableMultiInterfaces", false);
-		b.setChecked(mEnabled);
+		Switch multiIfaceSwitch = (Switch) findViewById(R.id.enable_multiiface);
+		multiIfaceSwitch.setOnCheckedChangeListener(onCheckedChangeListerner);
 
 		initInterfaces();
 		if (mEnabled)
@@ -73,6 +72,7 @@ public class MainActivity extends Activity {
 		 */
 		registerReceiver(mConnReceiver, 
 				new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+		multiIfaceSwitch.setChecked(mEnabled);
 	}
 
 	@Override
@@ -101,14 +101,6 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
-	public void enableMultiInterfaces(View v) {
-		mEnabled = !mEnabled;
-		if (mEnabled) {
-			showNotification();
-			monitorInterfaces();
-		} else
-			hideNotification();
-	}
 
 	private void showNotification() {
 		NotificationManager mNotification = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -334,4 +326,16 @@ public class MainActivity extends Activity {
 			}
 		}
 	}
+	OnCheckedChangeListener onCheckedChangeListerner = new OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView,
+				boolean isChecked) {
+			mEnabled = !mEnabled;
+			if (mEnabled) {
+				showNotification();
+				monitorInterfaces();
+			} else
+				hideNotification();
+		}
+	};
 }

@@ -8,22 +8,12 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
 
-    <ToggleButton
+    <Switch
         android:id="@+id/enable_multiiface"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:onClick="enableMultiInterfaces" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/enable_multiiface"
-        android:layout_alignBottom="@+id/enable_multiiface"
         android:layout_alignParentLeft="true"
-        android:layout_marginLeft="22dp"
-        android:text="@string/hello_world"
-        android:textSize="18sp" />
+        android:layout_below="@+id/enable_multiiface"
+        android:text="@string/switch_multiiface" />
 
 </RelativeLayout>
