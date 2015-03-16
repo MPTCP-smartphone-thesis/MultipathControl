@@ -12,6 +12,7 @@ public class MainActivity extends Activity {
 
 	private MPCtrl mpctrl;
 	private Switch multiIfaceSwitch;
+	private Switch defaultDataSwitch;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +20,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.main);
 
 		multiIfaceSwitch = (Switch) findViewById(R.id.switch_multiiface);
+		defaultDataSwitch = (Switch) findViewById(R.id.switch_default_data);
 
 		mpctrl = Manager.create(this);
 		if (mpctrl == null) {
@@ -32,6 +34,8 @@ public class MainActivity extends Activity {
 		setChecked();
 		multiIfaceSwitch
 				.setOnCheckedChangeListener(onCheckedChangeListernerMultiIface);
+		defaultDataSwitch
+				.setOnCheckedChangeListener(onCheckedChangeListernerDefaultData);
 
 		// start a new service if needed
 		startService(new Intent(this, MainService.class));
@@ -51,6 +55,7 @@ public class MainActivity extends Activity {
 
 	private void setChecked() {
 		multiIfaceSwitch.setChecked(mpctrl.getEnabled());
+		defaultDataSwitch.setChecked(mpctrl.getDefaultData());
 	}
 
 	private OnCheckedChangeListener onCheckedChangeListernerMultiIface = new OnCheckedChangeListener() {
@@ -62,6 +67,14 @@ public class MainActivity extends Activity {
 						MainActivity.this,
 						"The second interface will be disabled in a few seconds",
 						Toast.LENGTH_LONG).show();
+		}
+	};
+
+	private OnCheckedChangeListener onCheckedChangeListernerDefaultData = new OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView,
+				boolean isChecked) {
+			mpctrl.setDefaultData(isChecked);
 		}
 	};
 }

@@ -4,6 +4,7 @@
     <string name="app_name">Multipath Control</string>
     <string name="action_settings">Settings</string>
     <string name="switch_multiiface">Enable multi-interface</string>
+    <string name="switch_default_data">Default route via cellular</string>
     <string name="notification_title">Multipath Enabled</string>
     <string name="notification_text">Click to disable</string>
 

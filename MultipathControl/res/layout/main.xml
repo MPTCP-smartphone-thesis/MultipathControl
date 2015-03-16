@@ -17,4 +17,13 @@
         android:layout_below="@+id/switch_multiiface"
         android:text="@string/switch_multiiface" />
 
+    <Switch
+        android:id="@+id/switch_default_data"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_multiiface"
+        android:layout_below="@+id/switch_multiiface"
+        android:layout_marginTop="20dp"
+        android:text="@string/switch_default_data" />
+
 </RelativeLayout>

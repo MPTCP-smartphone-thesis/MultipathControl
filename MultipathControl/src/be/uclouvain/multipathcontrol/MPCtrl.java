@@ -35,8 +35,15 @@ public class MPCtrl {
 
 	public static final String PREFS_NAME = "MultipathControl";
 	public static final String PREFS_STATUS = "enableMultiInterfaces";
+	public static final String PREFS_DEFAULT_DATA = "defaultData";
+
+	private static final String DEFAULT_DATA_IFACE = "rmnet0"; // TODO: will not work when using 2 SIMs cards...
+	private static final String DEFAULT_WLAN_IFACE = "wlan0";
+
 	private HashMap<String, Integer> mIntfState;
+
 	private boolean mEnabled;
+	private boolean defaultData;
 	private Context context;
 	private final Handler handler;
 	private static long lastTimeHandler;
@@ -56,6 +63,7 @@ public class MPCtrl {
 		SharedPreferences settings = context
 				.getSharedPreferences(PREFS_NAME, 0);
 		mEnabled = settings.getBoolean(PREFS_STATUS, true);
+		defaultData = settings.getBoolean(PREFS_DEFAULT_DATA, false);
 
 		initInterfaces();
 
@@ -99,6 +107,7 @@ public class MPCtrl {
 		Log.i(Manager.TAG, "set new status "
 				+ (isChecked ? "enable" : "disable"));
 		mEnabled = isChecked;
+		saveStatus();
 
 		if (isChecked) {
 			showNotification();
@@ -107,7 +116,37 @@ public class MPCtrl {
 			hideNotification();
 		}
 
+		return true;
+	}
+
+	public boolean getDefaultData() {
+		return defaultData;
+	}
+
+	public String getDefaultIFace() {
+		if (defaultData)
+			return DEFAULT_DATA_IFACE;
+		else
+			return DEFAULT_WLAN_IFACE;
+	}
+
+	public boolean setDefaultData(boolean isChecked) {
+		if (isChecked == defaultData)
+			return false;
+		defaultData = isChecked;
 		saveStatus();
+
+		String iface = getDefaultIFace();
+
+		String gateway = getGateway(iface);
+		if (gateway == null)
+			return false;
+		try {
+			runAsRoot("ip route change default via " + gateway + " dev "
+					+ iface);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return true;
 	}
 
@@ -116,6 +155,7 @@ public class MPCtrl {
 				.getSharedPreferences(PREFS_NAME, 0);
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putBoolean(PREFS_STATUS, mEnabled);
+		editor.putBoolean(PREFS_DEFAULT_DATA, defaultData);
 		editor.commit();
 	}
 
@@ -181,8 +221,12 @@ public class MPCtrl {
 					"enableHIPRI");
 	}
 
+	private int mapIfaceToTable(String ifaceName) {
+		return Math.abs(ifaceName.hashCode()) % 32765 + 1;
+	}
+
 	private int mapIfaceToTable(NetworkInterface iface) {
-		return Math.abs(iface.getName().hashCode()) % 32765 + 1;
+		return mapIfaceToTable(iface.getName());
 	}
 
 	private int packAddress(InetAddress addr) {
@@ -206,18 +250,25 @@ public class MPCtrl {
 		return null;
 	}
 
-	private String getGateway(NetworkInterface iface) {
+	private String getGateway(String ifaceName) {
 		/* Unfortunately there is no clean/easy way to do this in Android :-( */
-		String gateway = getSystemProperty("net." + iface.getName() + ".gw");
-		gateway = gateway.isEmpty() ? getSystemProperty("dhcp."
-				+ iface.getName() + ".gateway") : gateway;
+		String gateway = getSystemProperty("net." + ifaceName + ".gw");
+		gateway = gateway.isEmpty() ? getSystemProperty("dhcp." + ifaceName
+				+ ".gateway") : gateway;
 		return gateway;
 	}
 
+	private String getGateway(NetworkInterface iface) {
+		return getGateway(iface.getName());
+	}
+
+	private Process runAsRoot(String cmd) throws Exception {
+		Log.d(Manager.TAG, "command: " + cmd);
+		return Runtime.getRuntime().exec(new String[] { "su", "-c", cmd });
+	}
 	private void runAsRoot(String[] cmds) throws Exception {
 		for (String cmd : cmds) {
-			Log.d("mpctrl", "command: " + cmd);
-			Runtime.getRuntime().exec(new String[] { "su", "-c", cmd });
+			runAsRoot(cmd);
 		}
 	}
 
@@ -269,6 +320,14 @@ public class MPCtrl {
 		}
 	}
 
+	private boolean isMobile(String ifaceName) {
+		return ifaceName.startsWith("rmnet");
+	}
+
+	private boolean isMobile(NetworkInterface iface) {
+		return isMobile(iface.getName());
+	}
+
 	/* Add Policy routing for interface */
 	private void setupRule(NetworkInterface iface, boolean update) {
 		int table = mapIfaceToTable(iface);
@@ -306,6 +365,11 @@ public class MPCtrl {
 								+ " scope link table " + table,
 						"ip route add default via " + gateway + " dev "
 								+ iface.getName() + " table " + table, });
+				if (isMobile(iface)) {
+					if (defaultData)
+						runAsRoot("ip route change default via " + gateway
+								+ " dev " + iface.getName());
+				}
 			} catch (Exception e) {
 			}
 		}
