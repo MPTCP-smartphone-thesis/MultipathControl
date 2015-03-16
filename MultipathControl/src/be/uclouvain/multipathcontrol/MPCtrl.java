@@ -38,12 +38,12 @@ public class MPCtrl {
 	private boolean mEnabled;
 	private Context context;
 	private final Handler handler;
+	private static long lastTimeHandler;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			Log.i(Manager.TAG, "BroadcastReceiver");
-			setMobileDataActive(); // disable/enable
 			monitorInterfaces();
 		}
 	};
@@ -122,6 +122,7 @@ public class MPCtrl {
 	// in deep-sleep
 	private void initHandler() {
 		final long fiveSecondsMs = 5 * 1000;
+		lastTimeHandler = System.currentTimeMillis();
 
 		/*
 		 * Ensures that the data interface and WiFi are connected at the same
@@ -130,8 +131,11 @@ public class MPCtrl {
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
-				if (mEnabled)
+				long nowTime = System.currentTimeMillis();
+				// do not try keep mobile data active in deep sleep mode
+				if (mEnabled && nowTime - lastTimeHandler < fiveSecondsMs * 2)
 					setMobileDataActive(); // to not disable cellular iface
+				lastTimeHandler = nowTime;
 				handler.postDelayed(this, fiveSecondsMs);
 			}
 		};
