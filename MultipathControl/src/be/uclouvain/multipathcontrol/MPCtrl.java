@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -169,7 +170,7 @@ public class MPCtrl {
 
 	/* Enable having WiFi and 3G/LTE enabled at the same time */
 	private void setMobileDataActive() {
-		Log.v(Manager.TAG, "setMobileDataActive");
+		Log.d(Manager.TAG, "setMobileDataActive " + new Date());
 		ConnectivityManager cManager = (ConnectivityManager) context
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		if (isMobileDataEnabled() && isWifiConnected() && mEnabled)
@@ -323,7 +324,6 @@ public class MPCtrl {
 				int addrs = mEnabled ? iface.getInterfaceAddresses().hashCode()
 						: 1;
 				String name = iface.getName();
-				Log.i(Manager.TAG, "monitor " + name);
 
 				if (iface.isLoopback())
 					continue;
@@ -331,12 +331,17 @@ public class MPCtrl {
 				if (!mIntfState.containsKey(name)) {
 					if (addrs != 1) /* hashcode of an empty List is 1 */
 						setupRule(iface, false);
+					Log.i(Manager.TAG, "New monitor " + name + " addrs: "
+							+ addrs);
 					mIntfState.put(name, addrs);
 					continue;
 				}
 
-				if (addrs != mIntfState.get(name))
+				if (addrs != mIntfState.get(name)) {
+					Log.i(Manager.TAG, "New addrs for " + name + " addrs: "
+							+ addrs);
 					setupRule(iface, true);
+				}
 
 				mIntfState.put(name, addrs);
 			}
