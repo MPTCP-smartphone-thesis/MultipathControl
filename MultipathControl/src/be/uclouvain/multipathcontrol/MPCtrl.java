@@ -27,6 +27,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Handler;
 import android.util.Log;
 
 public class MPCtrl {
@@ -35,8 +36,8 @@ public class MPCtrl {
 	public static final String PREFS_STATUS = "enableMultiInterfaces";
 	private HashMap<String, Integer> mIntfState;
 	private boolean mEnabled;
-	private Thread mThread;
 	private Context context;
+	private final Handler handler;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 		@Override
@@ -57,8 +58,8 @@ public class MPCtrl {
 
 		initInterfaces();
 
-		mThread = new Thread(new CheckMobileData());
-		mThread.start();
+		handler = new Handler();
+		initHandler();
 
 		/*
 		 * mConnReceiver will be called each time a change of connectivity
@@ -79,7 +80,7 @@ public class MPCtrl {
 
 		Log.i(Manager.TAG, "destroy MPCtrl");
 
-		mThread.interrupt();
+		handler.getLooper().quit();
 
 		hideNotification();
 
@@ -115,6 +116,28 @@ public class MPCtrl {
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putBoolean(PREFS_STATUS, mEnabled);
 		editor.commit();
+	}
+
+	// Will not be executed in deep sleep, nice, no need to use both connections
+	// in deep-sleep
+	private void initHandler() {
+		final long fiveSecondsMs = 5 * 1000;
+
+		/*
+		 * Ensures that the data interface and WiFi are connected at the same
+		 * time.
+		 */
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				if (mEnabled)
+					setMobileDataActive(); // to not disable cellular iface
+				handler.postDelayed(this, fiveSecondsMs);
+			}
+		};
+
+		// First check
+		handler.postDelayed(runnable, fiveSecondsMs);
 	}
 
 	private boolean isWifiConnected() {
@@ -314,22 +337,6 @@ public class MPCtrl {
 				mIntfState.put(name, addrs);
 			}
 		} catch (SocketException e) {
-		}
-	}
-
-	/* Ensures that the data interface and WiFi are connected at the same time. */
-	private class CheckMobileData implements Runnable {
-		public void run() {
-			while (true) {
-				if (mEnabled)
-					setMobileDataActive(); // to not disable cellular iface
-
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-					break;
-				}
-			}
 		}
 	}
 
