@@ -18,7 +18,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		multiIfaceSwitch = (Switch) findViewById(R.id.enable_multiiface);
+		multiIfaceSwitch = (Switch) findViewById(R.id.switch_multiiface);
 
 		mpctrl = Manager.create(this);
 		if (mpctrl == null) {
@@ -29,8 +29,9 @@ public class MainActivity extends Activity {
 		}
 
 		// do that now, to avoid useless call to onCheckedChangeListerner
-		multiIfaceSwitch.setChecked(mpctrl.getEnabled());
-		multiIfaceSwitch.setOnCheckedChangeListener(onCheckedChangeListerner);
+		setChecked();
+		multiIfaceSwitch
+				.setOnCheckedChangeListener(onCheckedChangeListernerMultiIface);
 
 		// start a new service if needed
 		startService(new Intent(this, MainService.class));
@@ -40,7 +41,7 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
-		multiIfaceSwitch.setChecked(mpctrl.getEnabled());
+		setChecked();
 	}
 
 	protected void onDestroy() {
@@ -48,7 +49,11 @@ public class MainActivity extends Activity {
 		Manager.destroy(this);
 	}
 
-	OnCheckedChangeListener onCheckedChangeListerner = new OnCheckedChangeListener() {
+	private void setChecked() {
+		multiIfaceSwitch.setChecked(mpctrl.getEnabled());
+	}
+
+	private OnCheckedChangeListener onCheckedChangeListernerMultiIface = new OnCheckedChangeListener() {
 		@Override
 		public void onCheckedChanged(CompoundButton buttonView,
 				boolean isChecked) {

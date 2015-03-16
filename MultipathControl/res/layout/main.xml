@@ -9,12 +9,12 @@
     tools:context=".MainActivity" >
 
     <Switch
-        android:id="@+id/enable_multiiface"
-        android:layout_width="wrap_content"
+        android:id="@+id/switch_multiiface"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/enable_multiiface"
+        android:layout_below="@+id/switch_multiiface"
         android:text="@string/switch_multiiface" />
 
 </RelativeLayout>
