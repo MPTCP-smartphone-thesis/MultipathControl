@@ -44,7 +44,7 @@ public class MPCtrl {
 	private HashMap<String, Integer> mIntfState;
 
 	private boolean mEnabled;
-	private boolean defaultData;
+	private boolean defaultRouteData;
 	private boolean dataBackup;
 
 	private Context context;
@@ -66,7 +66,7 @@ public class MPCtrl {
 		SharedPreferences settings = context
 				.getSharedPreferences(PREFS_NAME, 0);
 		mEnabled = settings.getBoolean(PREFS_STATUS, true);
-		defaultData = settings.getBoolean(PREFS_DEFAULT_DATA, false);
+		defaultRouteData = settings.getBoolean(PREFS_DEFAULT_DATA, false);
 		dataBackup = settings.getBoolean(PREFS_DATA_BACKUP, false);
 
 		initInterfaces();
@@ -124,34 +124,23 @@ public class MPCtrl {
 	}
 
 	public boolean getDefaultData() {
-		return defaultData;
+		return defaultRouteData;
 	}
 
 	public String getDefaultIFace() {
-		if (defaultData)
+		if (defaultRouteData)
 			return DEFAULT_DATA_IFACE;
 		else
 			return DEFAULT_WLAN_IFACE;
 	}
 
 	public boolean setDefaultData(boolean isChecked) {
-		if (isChecked == defaultData)
+		if (isChecked == defaultRouteData)
 			return false;
-		defaultData = isChecked;
+		defaultRouteData = isChecked;
 		saveStatus();
 
-		String iface = getDefaultIFace();
-
-		String gateway = getGateway(iface);
-		if (gateway == null)
-			return false;
-		try {
-			runAsRoot("ip route change default via " + gateway + " dev "
-					+ iface);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return true;
+		return setDefaultRoute();
 	}
 
 	public boolean getDataBackup() {
@@ -184,7 +173,7 @@ public class MPCtrl {
 				.getSharedPreferences(PREFS_NAME, 0);
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putBoolean(PREFS_STATUS, mEnabled);
-		editor.putBoolean(PREFS_DEFAULT_DATA, defaultData);
+		editor.putBoolean(PREFS_DEFAULT_DATA, defaultRouteData);
 		editor.putBoolean(PREFS_DATA_BACKUP, dataBackup);
 		editor.commit();
 	}
@@ -396,7 +385,7 @@ public class MPCtrl {
 						"ip route add default via " + gateway + " dev "
 								+ iface.getName() + " table " + table, });
 				if (isMobile(iface)) {
-					if (defaultData)
+					if (defaultRouteData)
 						runAsRoot("ip route change default via " + gateway
 								+ " dev " + iface.getName());
 					if (dataBackup)
@@ -444,6 +433,25 @@ public class MPCtrl {
 			}
 		} catch (SocketException e) {
 		}
+
+		// if WLan iface has been modified, default route will be wrong
+		if (defaultRouteData)
+			setDefaultRoute();
+	}
+
+	private boolean setDefaultRoute() {
+		String iface = getDefaultIFace();
+
+		String gateway = getGateway(iface);
+		if (gateway == null)
+			return false;
+		try {
+			runAsRoot("ip route change default via " + gateway + " dev "
+					+ iface);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
 	}
 
 	private void showNotification() {
