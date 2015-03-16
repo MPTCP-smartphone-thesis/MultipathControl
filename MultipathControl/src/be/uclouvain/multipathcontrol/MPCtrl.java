@@ -92,14 +92,13 @@ public class MPCtrl {
 		return mEnabled;
 	}
 
-	public void setStatus(boolean isChecked) {
+	public boolean setStatus(boolean isChecked) {
 		if (isChecked == mEnabled)
-			return;
+			return false;
 
 		Log.i(Manager.TAG, "set new status "
 				+ (isChecked ? "enable" : "disable"));
 		mEnabled = isChecked;
-		// TODO: context.unregisterReceiver(mConnReceiver);
 
 		if (isChecked) {
 			showNotification();
@@ -109,6 +108,7 @@ public class MPCtrl {
 		}
 
 		saveStatus();
+		return true;
 	}
 
 	private void saveStatus() {

@@ -52,7 +52,11 @@ public class MainActivity extends Activity {
 		@Override
 		public void onCheckedChanged(CompoundButton buttonView,
 				boolean isChecked) {
-			mpctrl.setStatus(isChecked);
+			if (mpctrl.setStatus(isChecked) && !isChecked)
+				Toast.makeText(
+						MainActivity.this,
+						"The second interface will be disabled in a few seconds",
+						Toast.LENGTH_LONG).show();
 		}
 	};
 }
