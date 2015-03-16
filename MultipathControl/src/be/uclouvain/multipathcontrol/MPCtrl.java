@@ -36,6 +36,7 @@ public class MPCtrl {
 	public static final String PREFS_NAME = "MultipathControl";
 	public static final String PREFS_STATUS = "enableMultiInterfaces";
 	public static final String PREFS_DEFAULT_DATA = "defaultData";
+	public static final String PREFS_DATA_BACKUP = "dataBackup";
 
 	private static final String DEFAULT_DATA_IFACE = "rmnet0"; // TODO: will not work when using 2 SIMs cards...
 	private static final String DEFAULT_WLAN_IFACE = "wlan0";
@@ -44,6 +45,8 @@ public class MPCtrl {
 
 	private boolean mEnabled;
 	private boolean defaultData;
+	private boolean dataBackup;
+
 	private Context context;
 	private final Handler handler;
 	private static long lastTimeHandler;
@@ -64,6 +67,7 @@ public class MPCtrl {
 				.getSharedPreferences(PREFS_NAME, 0);
 		mEnabled = settings.getBoolean(PREFS_STATUS, true);
 		defaultData = settings.getBoolean(PREFS_DEFAULT_DATA, false);
+		dataBackup = settings.getBoolean(PREFS_DATA_BACKUP, false);
 
 		initInterfaces();
 
@@ -150,12 +154,38 @@ public class MPCtrl {
 		return true;
 	}
 
+	public boolean getDataBackup() {
+		return dataBackup;
+	}
+
+	public boolean setDataBackup(boolean isChecked) {
+		if (isChecked == dataBackup)
+			return false;
+		dataBackup = isChecked;
+		saveStatus();
+
+		String status;
+		if (dataBackup)
+			status = "backup";
+		else
+			status = "on";
+
+		try {
+			runAsRoot("ip link set dev " + DEFAULT_DATA_IFACE + " multipath "
+					+ status);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
 	private void saveStatus() {
 		SharedPreferences settings = context
 				.getSharedPreferences(PREFS_NAME, 0);
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putBoolean(PREFS_STATUS, mEnabled);
 		editor.putBoolean(PREFS_DEFAULT_DATA, defaultData);
+		editor.putBoolean(PREFS_DATA_BACKUP, dataBackup);
 		editor.commit();
 	}
 
@@ -369,6 +399,9 @@ public class MPCtrl {
 					if (defaultData)
 						runAsRoot("ip route change default via " + gateway
 								+ " dev " + iface.getName());
+					if (dataBackup)
+						runAsRoot("ip link set dev " + iface.getName()
+								+ " multipath backup");
 				}
 			} catch (Exception e) {
 			}

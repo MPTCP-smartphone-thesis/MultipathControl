@@ -13,6 +13,7 @@ public class MainActivity extends Activity {
 	private MPCtrl mpctrl;
 	private Switch multiIfaceSwitch;
 	private Switch defaultDataSwitch;
+	private Switch dataBackupSwitch;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +22,7 @@ public class MainActivity extends Activity {
 
 		multiIfaceSwitch = (Switch) findViewById(R.id.switch_multiiface);
 		defaultDataSwitch = (Switch) findViewById(R.id.switch_default_data);
+		dataBackupSwitch = (Switch) findViewById(R.id.switch_data_backup);
 
 		mpctrl = Manager.create(this);
 		if (mpctrl == null) {
@@ -36,6 +38,8 @@ public class MainActivity extends Activity {
 				.setOnCheckedChangeListener(onCheckedChangeListernerMultiIface);
 		defaultDataSwitch
 				.setOnCheckedChangeListener(onCheckedChangeListernerDefaultData);
+		dataBackupSwitch
+				.setOnCheckedChangeListener(onCheckedChangeListernerDataBackup);
 
 		// start a new service if needed
 		startService(new Intent(this, MainService.class));
@@ -56,6 +60,7 @@ public class MainActivity extends Activity {
 	private void setChecked() {
 		multiIfaceSwitch.setChecked(mpctrl.getEnabled());
 		defaultDataSwitch.setChecked(mpctrl.getDefaultData());
+		dataBackupSwitch.setChecked(mpctrl.getDataBackup());
 	}
 
 	private OnCheckedChangeListener onCheckedChangeListernerMultiIface = new OnCheckedChangeListener() {
@@ -75,6 +80,14 @@ public class MainActivity extends Activity {
 		public void onCheckedChanged(CompoundButton buttonView,
 				boolean isChecked) {
 			mpctrl.setDefaultData(isChecked);
+		}
+	};
+
+	private OnCheckedChangeListener onCheckedChangeListernerDataBackup = new OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView,
+				boolean isChecked) {
+			mpctrl.setDataBackup(isChecked);
 		}
 	};
 }
