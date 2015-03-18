@@ -8,9 +8,16 @@ import android.content.Intent;
 
 public class Notifications {
 
-	public static void showNotification(Context context) {
-		NotificationManager mNotification = (NotificationManager) context
+	private final NotificationManager mNotification;
+	private final Context context;
+
+	public Notifications(Context context) {
+		this.context = context;
+		mNotification = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
+	}
+
+	public void showNotification() {
 		Intent intent = new Intent(context, MainActivity.class);
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 1,
 				intent, 0);
@@ -31,7 +38,7 @@ public class Notifications {
 		mNotification.notify(1, notif);
 	}
 
-	public static void hideNotification(Context context) {
+	public void hideNotification() {
 		NotificationManager mNotification = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 		mNotification.cancelAll();

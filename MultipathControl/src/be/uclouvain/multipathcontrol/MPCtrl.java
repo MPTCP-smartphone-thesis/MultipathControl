@@ -45,6 +45,7 @@ public class MPCtrl {
 	private boolean dataBackup;
 
 	private Context context;
+	private Notifications notif;
 	private final Handler handler;
 	private static long lastTimeHandler;
 
@@ -78,8 +79,9 @@ public class MPCtrl {
 		context.registerReceiver(mConnReceiver, new IntentFilter(
 				ConnectivityManager.CONNECTIVITY_ACTION));
 
+		notif = new Notifications(context);
 		if (mEnabled)
-			Notifications.showNotification(context);
+			notif.showNotification();
 	}
 
 	public void destroy() {
@@ -92,7 +94,7 @@ public class MPCtrl {
 
 		handler.getLooper().quit();
 
-		Notifications.hideNotification(context);
+		notif.hideNotification();
 
 		saveStatus();
 	}
@@ -111,10 +113,10 @@ public class MPCtrl {
 		saveStatus();
 
 		if (isChecked) {
-			Notifications.showNotification(context);
+			notif.showNotification();
 			monitorInterfaces();
 		} else {
-			Notifications.hideNotification(context);
+			notif.hideNotification();
 		}
 
 		return true;

@@ -7,6 +7,6 @@
     <string name="switch_default_data">Default route via cellular</string>
     <string name="switch_data_backup">Set cellular as backup (patched version of iproute is needed)</string>
     <string name="notification_title">Multipath Enabled</string>
-    <string name="notification_text">Click to disable</string>
+    <string name="notification_text">Click to change options</string>
 
 </resources>
