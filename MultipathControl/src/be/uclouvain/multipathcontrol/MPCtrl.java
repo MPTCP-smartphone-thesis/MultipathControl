@@ -26,6 +26,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.util.Log;
 
 public class MPCtrl {
@@ -53,6 +54,10 @@ public class MPCtrl {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			Log.i(Manager.TAG, "BroadcastReceiver");
+			PowerManager pm = (PowerManager) context
+					.getSystemService(Context.POWER_SERVICE);
+			if (pm.isScreenOn())
+				handler.post(runnable);
 			monitorInterfaces();
 		}
 	};
@@ -180,28 +185,27 @@ public class MPCtrl {
 	// Will not be executed in deep sleep, nice, no need to use both connections
 	// in deep-sleep
 	private void initHandler() {
-		final long fiveSecondsMs = 5 * 1000;
 		lastTimeHandler = System.currentTimeMillis();
 
-		/*
-		 * Ensures that the data interface and WiFi are connected at the same
-		 * time.
-		 */
-		Runnable runnable = new Runnable() {
-			@Override
-			public void run() {
-				long nowTime = System.currentTimeMillis();
-				// do not try keep mobile data active in deep sleep mode
-				if (mEnabled && nowTime - lastTimeHandler < fiveSecondsMs * 2)
-					setMobileDataActive(); // to not disable cellular iface
-				lastTimeHandler = nowTime;
-				handler.postDelayed(this, fiveSecondsMs);
-			}
-		};
-
 		// First check
-		handler.postDelayed(runnable, fiveSecondsMs);
+		handler.post(runnable);
 	}
+
+	/*
+	 * Ensures that the data interface and WiFi are connected at the same time.
+	 */
+	private Runnable runnable = new Runnable() {
+		final long fiveSecondsMs = 5 * 1000;
+		@Override
+		public void run() {
+			long nowTime = System.currentTimeMillis();
+			// do not try keep mobile data active in deep sleep mode
+			if (mEnabled && nowTime - lastTimeHandler < fiveSecondsMs * 2)
+				setMobileDataActive(); // to not disable cellular iface
+			lastTimeHandler = nowTime;
+			handler.postDelayed(this, fiveSecondsMs);
+		}
+	};
 
 	private boolean isWifiConnected() {
 		ConnectivityManager connManager = (ConnectivityManager) context
