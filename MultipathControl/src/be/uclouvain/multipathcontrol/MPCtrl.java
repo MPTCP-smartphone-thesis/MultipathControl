@@ -212,7 +212,7 @@ public class MPCtrl {
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo mWifi = connManager
 				.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		return mWifi.isConnected();
+		return mWifi.isConnectedOrConnecting();
 	}
 
 	/* Check whether Mobile Data has been disabled in the System Preferences */
