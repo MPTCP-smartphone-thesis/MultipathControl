@@ -32,6 +32,7 @@ public class MPCtrl {
 
 	public MPCtrl(Context context) {
 		this.context = context;
+		Config.getDefaultConfig(context);
 		notif = new Notifications(context);
 		mobileDataMgr = new MobileDataMgr(context);
 		iproute = new IPRoute(mobileDataMgr);
