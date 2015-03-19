@@ -67,10 +67,6 @@ public class MPCtrl {
 		Config.saveStatus(context);
 	}
 
-	public boolean getEnabled() {
-		return Config.mEnabled;
-	}
-
 	public boolean setStatus(boolean isChecked) {
 		if (isChecked == Config.mEnabled)
 			return false;
@@ -90,10 +86,6 @@ public class MPCtrl {
 		return true;
 	}
 
-	public boolean getDefaultData() {
-		return Config.defaultRouteData;
-	}
-
 	public boolean setDefaultData(boolean isChecked) {
 		if (isChecked == Config.defaultRouteData)
 			return false;
@@ -103,10 +95,6 @@ public class MPCtrl {
 		return iproute.setDefaultRoute();
 	}
 
-	public boolean getDataBackup() {
-		return Config.dataBackup;
-	}
-
 	public boolean setDataBackup(boolean isChecked) {
 		if (isChecked == Config.dataBackup)
 			return false;
@@ -114,10 +102,6 @@ public class MPCtrl {
 		Config.saveStatus(context);
 
 		return iproute.setDataBackup();
-	}
-
-	public boolean getSaveBattery() {
-		return Config.saveBattery;
 	}
 
 	public boolean setSaveBattery(boolean isChecked) {

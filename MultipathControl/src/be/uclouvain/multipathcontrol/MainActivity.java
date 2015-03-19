@@ -62,10 +62,10 @@ public class MainActivity extends Activity {
 	}
 
 	private void setChecked() {
-		multiIfaceSwitch.setChecked(mpctrl.getEnabled());
-		defaultDataSwitch.setChecked(mpctrl.getDefaultData());
-		dataBackupSwitch.setChecked(mpctrl.getDataBackup());
-		saveBatterySwitch.setChecked(mpctrl.getSaveBattery());
+		multiIfaceSwitch.setChecked(Config.mEnabled);
+		defaultDataSwitch.setChecked(Config.defaultRouteData);
+		dataBackupSwitch.setChecked(Config.dataBackup);
+		saveBatterySwitch.setChecked(Config.saveBattery);
 	}
 
 	private OnCheckedChangeListener onCheckedChangeListernerMultiIface = new OnCheckedChangeListener() {
