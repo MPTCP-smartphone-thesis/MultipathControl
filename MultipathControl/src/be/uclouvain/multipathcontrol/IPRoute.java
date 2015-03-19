@@ -193,6 +193,7 @@ public class IPRoute {
 					if (Config.dataBackup)
 						runAsRoot("ip link set dev " + iface.getName()
 								+ " multipath backup");
+					mobileDataMgr.keepMobileConnectionAlive();
 				}
 			} catch (Exception e) {
 			}
