@@ -187,7 +187,7 @@ public class IPRoute {
 						"ip route add default via " + gateway + " dev "
 								+ iface.getName() + " table " + table, });
 				if (isMobile(iface)) {
-					if (Config.defaultRouteData) // TODO: used android tools?
+					if (Config.defaultRouteData)
 						runAsRoot("ip route change default via " + gateway
 								+ " dev " + iface.getName());
 					if (Config.dataBackup)
