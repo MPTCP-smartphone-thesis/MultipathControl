@@ -107,36 +107,6 @@ public class MobileDataMgr {
 			return false;
 		}
 
-		// check if mobile connection is available and connected
-		State state = connectivityManager.getNetworkInfo(
-				ConnectivityManager.TYPE_MOBILE_HIPRI).getState();
-		Log.d(Manager.TAG, "TYPE_MOBILE_HIPRI network state: " + state);
-		if (0 == state.compareTo(State.CONNECTED)
-				|| 0 == state.compareTo(State.CONNECTING)) {
-			return true;
-		}
-
-		// activate mobile connection in addition to other connection already
-		// activated
-		int resultInt = connectivityManager.startUsingNetworkFeature(
-				ConnectivityManager.TYPE_MOBILE, "enableHIPRI");
-		Log.d(Manager.TAG, "startUsingNetworkFeature for enableHIPRI result: "
-				+ resultInt);
-
-		// -1 means errors
-		// 0 means already enabled
-		// 1 means enabled
-		// other values can be returned, because this method is vendor specific
-		if (-1 == resultInt) {
-			Log.e(Manager.TAG,
-					"Wrong result of startUsingNetworkFeature, maybe problems");
-			return false;
-		}
-		if (0 == resultInt) {
-			Log.d(Manager.TAG, "No need to perform additional network settings");
-			return true;
-		}
-
 		// create a route for the specified address
 		int hostAddress = lookupHost(DEFAULT_LOOKUP_HOST);
 		if (-1 == hostAddress) {
@@ -149,6 +119,8 @@ public class MobileDataMgr {
 			for (int counter = 0; counter < 30; counter++) {
 				State checkState = connectivityManager.getNetworkInfo(
 						ConnectivityManager.TYPE_MOBILE_HIPRI).getState();
+				Log.d(Manager.TAG, "TYPE_MOBILE_HIPRI network state: "
+						+ checkState);
 				if (0 == checkState.compareTo(State.CONNECTED))
 					break;
 				Thread.sleep(1000);
