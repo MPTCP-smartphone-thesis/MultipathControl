@@ -25,7 +25,7 @@ public class MPCtrl {
 			PowerManager pm = (PowerManager) context
 					.getSystemService(Context.POWER_SERVICE);
 			if (pm.isScreenOn())
-				handler.post(runnable);
+				mobileDataMgr.setMobileDataActive(Config.mEnabled);
 			iproute.monitorInterfaces();
 		}
 	};
