@@ -116,6 +116,18 @@ public class MPCtrl {
 		return iproute.setDataBackup();
 	}
 
+	public boolean getSaveBattery() {
+		return Config.saveBattery;
+	}
+
+	public boolean setSaveBattery(boolean isChecked) {
+		if (isChecked == Config.saveBattery)
+			return false;
+		Config.saveBattery = isChecked;
+		Config.saveStatus(context);
+		return true;
+	}
+
 	// Will not be executed in deep sleep, nice, no need to use both connections
 	// in deep-sleep
 	private void initHandler() {

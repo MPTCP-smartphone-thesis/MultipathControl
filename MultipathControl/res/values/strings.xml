@@ -6,6 +6,7 @@
     <string name="switch_multiiface">Enable multi-interface</string>
     <string name="switch_default_data">Default route via cellular</string>
     <string name="switch_data_backup">Set cellular as backup (patched version of iproute is needed)</string>
+    <string name="switch_save_battery">Save battery by not forcing cellular interface to be actived in deep sleep (but when switching to a new Wi-Fi router, the cellular connection will be stopped for a few micro seconds but it\'s supported by MPTCP)</string>
     <string name="notification_title">Multipath Enabled</string>
     <string name="notification_text">Click to change options</string>
 

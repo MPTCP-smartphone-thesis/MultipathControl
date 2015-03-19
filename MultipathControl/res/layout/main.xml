@@ -35,4 +35,13 @@
         android:layout_marginTop="20dp"
         android:text="@string/switch_data_backup" />
 
+    <Switch
+        android:id="@+id/switch_save_battery"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_data_backup"
+        android:layout_below="@+id/switch_data_backup"
+        android:layout_marginTop="20dp"
+        android:text="@string/switch_save_battery" />
+
 </RelativeLayout>

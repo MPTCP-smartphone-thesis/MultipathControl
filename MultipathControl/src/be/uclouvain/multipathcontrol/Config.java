@@ -9,10 +9,12 @@ public class Config {
 	public static final String PREFS_STATUS = "enableMultiInterfaces";
 	public static final String PREFS_DEFAULT_DATA = "defaultData";
 	public static final String PREFS_DATA_BACKUP = "dataBackup";
+	public static final String PREFS_SAVE_BATTERY = "saveBattery";
 
+	public static boolean mEnabled;
 	public static boolean defaultRouteData;
 	public static boolean dataBackup;
-	public static boolean mEnabled;
+	public static boolean saveBattery;
 
 	public static void getDefaultConfig(Context context) {
 		SharedPreferences settings = context
@@ -20,6 +22,7 @@ public class Config {
 		mEnabled = settings.getBoolean(PREFS_STATUS, true);
 		defaultRouteData = settings.getBoolean(PREFS_DEFAULT_DATA, false);
 		dataBackup = settings.getBoolean(PREFS_DATA_BACKUP, false);
+		saveBattery = settings.getBoolean(PREFS_SAVE_BATTERY, false);
 	}
 
 	public static void saveStatus(Context context) {
@@ -29,6 +32,7 @@ public class Config {
 		editor.putBoolean(PREFS_STATUS, mEnabled);
 		editor.putBoolean(PREFS_DEFAULT_DATA, defaultRouteData);
 		editor.putBoolean(PREFS_DATA_BACKUP, dataBackup);
+		editor.putBoolean(PREFS_SAVE_BATTERY, saveBattery);
 		editor.commit();
 	}
 }
