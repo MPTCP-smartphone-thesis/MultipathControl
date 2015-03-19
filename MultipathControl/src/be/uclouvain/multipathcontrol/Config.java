@@ -22,7 +22,7 @@ public class Config {
 		mEnabled = settings.getBoolean(PREFS_STATUS, true);
 		defaultRouteData = settings.getBoolean(PREFS_DEFAULT_DATA, false);
 		dataBackup = settings.getBoolean(PREFS_DATA_BACKUP, false);
-		saveBattery = settings.getBoolean(PREFS_SAVE_BATTERY, false);
+		saveBattery = settings.getBoolean(PREFS_SAVE_BATTERY, true);
 	}
 
 	public static void saveStatus(Context context) {
