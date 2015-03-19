@@ -42,8 +42,10 @@ public class Manager {
 		if (context != usedContext || mpctrl == null)
 			return false;
 		instances--;
-		if (instances != 0)
+		if (instances != 0) {
 			Log.e(TAG, "destroying the non last instance");
+			return false;
+		}
 		mpctrl.destroy();
 		mpctrl = null;
 		return true;
