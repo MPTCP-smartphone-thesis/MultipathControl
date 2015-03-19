@@ -149,6 +149,25 @@ public class IPRoute {
 		return isMobile(iface.getName());
 	}
 
+	private boolean isIPv6(String hostAddr) {
+		return hostAddr.contains(":");
+	}
+
+	private String getIPVersion(String hostAddr) {
+		if (isIPv6(hostAddr))
+			return "-6";
+		return "-4";
+	}
+
+	private String removeScope(String hostAddr) {
+		if (hostAddr == null)
+			return null;
+		int pos = hostAddr.indexOf("%");
+		if (pos == -1)
+			return hostAddr;
+		return hostAddr.substring(0, pos);
+	}
+
 	/* Add Policy routing for interface */
 	private void setupRule(NetworkInterface iface, boolean update) {
 		int table = mapIfaceToTable(iface);
@@ -167,6 +186,7 @@ public class IPRoute {
 
 			if (gateway == null)
 				continue;
+			gateway = removeScope(gateway);
 
 			try {
 				subnet = toSubnet(addr, prefix);
@@ -177,18 +197,29 @@ public class IPRoute {
 			if (addr.isLinkLocalAddress())
 				continue;
 
+			String hostAddr = removeScope(addr.getHostAddress());
+			String subnetAddr = removeScope(subnet.getHostAddress());
+			if (hostAddr == null || subnetAddr == null) {
+				Log.w(Manager.TAG, "hostAddr and/or subnetAddr is null");
+				continue;
+			}
+
 			try {
 				runAsRoot(new String[] {
-						"ip rule add from " + addr.getHostAddress() + " table "
+						"ip " + getIPVersion(hostAddr) + " rule add from "
+								+ hostAddr + " table "
 								+ table,
-						"ip route add " + subnet.getHostAddress() + "/"
+						"ip " + getIPVersion(subnetAddr) + " route add "
+								+ subnetAddr + "/"
 								+ prefix + " dev " + iface.getName()
 								+ " scope link table " + table,
-						"ip route add default via " + gateway + " dev "
+						"ip " + getIPVersion(gateway)
+								+ " route add default via " + gateway + " dev "
 								+ iface.getName() + " table " + table, });
 				if (isMobile(iface)) {
 					if (Config.defaultRouteData)
-						runAsRoot("ip route change default via " + gateway
+						runAsRoot("ip " + getIPVersion(gateway)
+								+ " route change default via " + gateway
 								+ " dev " + iface.getName());
 					if (Config.dataBackup)
 						runAsRoot("ip link set dev " + iface.getName()
@@ -244,11 +275,14 @@ public class IPRoute {
 		String gateway = getGateway(iface);
 		if (gateway == null)
 			return false;
+		gateway = removeScope(gateway);
 		try {
-			runAsRoot("ip route change default via " + gateway + " dev "
+			runAsRoot("ip " + getIPVersion(gateway)
+					+ " route change default via " + gateway + " dev "
 					+ iface);
 			// if there where no default route
-			runAsRoot("ip route add default via " + gateway + " dev " + iface);
+			runAsRoot("ip " + getIPVersion(gateway) + " route add default via "
+					+ gateway + " dev " + iface);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
