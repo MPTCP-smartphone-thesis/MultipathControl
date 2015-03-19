@@ -33,15 +33,35 @@
         android:layout_alignLeft="@+id/switch_default_data"
         android:layout_below="@+id/switch_default_data"
         android:layout_marginTop="20dp"
+        android:contentDescription="@string/switch_data_backup_desc"
         android:text="@string/switch_data_backup" />
+
+    <TextView
+        android:id="@+id/text_data_backup_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_save_battery"
+        android:layout_below="@+id/switch_data_backup"
+        android:text="@string/switch_data_backup_desc"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/text_save_battery_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_save_battery"
+        android:layout_below="@+id/switch_save_battery"
+        android:text="@string/switch_save_battery_desc"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <Switch
         android:id="@+id/switch_save_battery"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/switch_data_backup"
-        android:layout_below="@+id/switch_data_backup"
-        android:layout_marginTop="20dp"
+        android:layout_below="@+id/text_data_backup_desc"
+        android:layout_marginTop="18dp"
+        android:contentDescription="@string/switch_save_battery_desc"
         android:text="@string/switch_save_battery" />
 
 </RelativeLayout>
