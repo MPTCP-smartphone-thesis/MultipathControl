@@ -3,6 +3,9 @@ package be.uclouvain.multipathcontrol;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
@@ -25,6 +28,7 @@ public class MainActivity extends Activity {
 		defaultDataSwitch = (Switch) findViewById(R.id.switch_default_data);
 		dataBackupSwitch = (Switch) findViewById(R.id.switch_data_backup);
 		saveBatterySwitch = (Switch) findViewById(R.id.switch_save_battery);
+		Button tcpCCButton = (Button) findViewById(R.id.button_tcp_cc);
 
 		mpctrl = Manager.create(this);
 		if (mpctrl == null) {
@@ -44,6 +48,7 @@ public class MainActivity extends Activity {
 				.setOnCheckedChangeListener(onCheckedChangeListernerDataBackup);
 		saveBatterySwitch
 				.setOnCheckedChangeListener(onCheckedChangeListernerSaveBattery);
+		tcpCCButton.setOnClickListener(onClickListenerTcpCC);
 
 		// start a new service if needed
 		startService(new Intent(this, MainService.class));
@@ -105,6 +110,14 @@ public class MainActivity extends Activity {
 						MainActivity.this,
 						"Please disconnect/reconnect cellular interface or reboot",
 						Toast.LENGTH_LONG).show();
+		}
+	};
+
+	private OnClickListener onClickListenerTcpCC = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			Intent intent = new Intent(MainActivity.this, TCPCCActivity.class);
+			startActivity(intent);
 		}
 	};
 }

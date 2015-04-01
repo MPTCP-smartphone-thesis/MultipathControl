@@ -11,5 +11,6 @@
 	<string name="switch_save_battery_desc">The cellular connection will not be maintained all the time. Then when switching to a new Wi-Fi router, the cellular connection will be stopped for a few micro seconds but it\'s supported by MPTCP</string>
     <string name="notification_title">Multipath Enabled</string>
     <string name="notification_text">Click to change options</string>
+    <string name="button_tcp_cc">TCP Congestion Control Algorithms</string>
 
 </resources>

@@ -21,7 +21,7 @@ public class MPCtrl {
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			Log.i(Manager.TAG, "BroadcastReceiver");
+			Log.i(Manager.TAG, "BroadcastReceiver " + intent);
 			PowerManager pm = (PowerManager) context
 					.getSystemService(Context.POWER_SERVICE);
 			if (pm.isScreenOn())

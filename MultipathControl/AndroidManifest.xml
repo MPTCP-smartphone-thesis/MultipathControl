@@ -42,6 +42,10 @@
             android:name=".MainService"
             android:label="Main Service" >
         </service>
+        <activity android:name="TCPCCActivity"
+            android:label="@string/button_tcp_cc"
+            android:launchMode="singleTask">
+        </activity>
 
     </application>
 

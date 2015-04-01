@@ -60,8 +60,17 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/switch_data_backup"
         android:layout_below="@+id/text_data_backup_desc"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="20dp"
         android:contentDescription="@string/switch_save_battery_desc"
         android:text="@string/switch_save_battery" />
+
+    <Button
+        android:id="@+id/button_tcp_cc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text_save_battery_desc"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="@string/button_tcp_cc" />
 
 </RelativeLayout>
