@@ -92,7 +92,7 @@ public class MPCtrl {
 		Config.defaultRouteData = isChecked;
 		Config.saveStatus(context);
 
-		return iproute.setDefaultRoute();
+		return IPRouteUtils.setDefaultRoute();
 	}
 
 	public boolean setDataBackup(boolean isChecked) {
@@ -101,7 +101,7 @@ public class MPCtrl {
 		Config.dataBackup = isChecked;
 		Config.saveStatus(context);
 
-		return iproute.setDataBackup();
+		return IPRouteUtils.setDataBackup();
 	}
 
 	public boolean setSaveBattery(boolean isChecked) {

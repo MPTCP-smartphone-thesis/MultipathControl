@@ -1,28 +1,16 @@
 package be.uclouvain.multipathcontrol;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import android.util.Log;
 
 public class IPRoute {
-
-	private static final String DEFAULT_DATA_IFACE = "rmnet0"; // TODO: will not work when using 2 SIMs cards...
-	private static final String DEFAULT_WLAN_IFACE = "wlan0";
 
 	private final MobileDataMgr mobileDataMgr;
 
@@ -34,146 +22,12 @@ public class IPRoute {
 		monitorInterfaces();
 	}
 
-	private String getDefaultIFace() {
-		if (Config.defaultRouteData)
-			return DEFAULT_DATA_IFACE;
-		else
-			return DEFAULT_WLAN_IFACE;
-	}
-
-	private int mapIfaceToTable(String ifaceName) {
-		return Math.abs(ifaceName.hashCode()) % 32765 + 1;
-	}
-
-	private int mapIfaceToTable(NetworkInterface iface) {
-		return mapIfaceToTable(iface.getName());
-	}
-
-	private int packAddress(InetAddress addr) {
-		return ByteBuffer.wrap(addr.getAddress()).getInt();
-	}
-
-	private InetAddress unpackAddress(int addr) throws UnknownHostException {
-		return InetAddress.getByAddress(new byte[] {
-				(byte) ((addr >>> 24) & 0xff), (byte) ((addr >>> 16) & 0xff),
-				(byte) ((addr >>> 8) & 0xff), (byte) ((addr) & 0xff) });
-	}
-
-	/* Return the value of a system property key */
-	private String getSystemProperty(String key) {
-		try {
-			Class<?> spClass = Class.forName("android.os.SystemProperties");
-			Method method = spClass.getDeclaredMethod("get", String.class);
-			return (String) method.invoke(spClass, key);
-		} catch (Exception e) {
-		}
-		return null;
-	}
-
-	private String getGateway(String ifaceName) {
-		/* Unfortunately there is no clean/easy way to do this in Android :-( */
-		String gateway = getSystemProperty("net." + ifaceName + ".gw");
-		gateway = gateway.isEmpty() ? getSystemProperty("dhcp." + ifaceName
-				+ ".gateway") : gateway;
-		return gateway;
-	}
-
-	private String getGateway(NetworkInterface iface) {
-		return getGateway(iface.getName());
-	}
-
-	private Process runAsRoot(String cmd) throws Exception {
-		Log.d(Manager.TAG, "command: " + cmd);
-		return Runtime.getRuntime().exec(new String[] { "su", "-c", cmd });
-	}
-
-	private void runAsRoot(String[] cmds) throws Exception {
-		for (String cmd : cmds) {
-			runAsRoot(cmd);
-		}
-	}
-
-	private InetAddress toSubnet(InetAddress addr, int prefix)
-			throws UnknownHostException {
-		int address = packAddress(addr);
-		int mask = 0xffffffff << (32 - prefix);
-		int subnet = address & mask;
-		return unpackAddress(subnet);
-	}
-
-	private List<Integer> existingRules(int table) {
-		Pattern pa = Pattern.compile("^([0-9]+):.* lookup " + table + " $");
-		List<Integer> rules = new ArrayList<Integer>();
-
-		try {
-			String line;
-			Process p = Runtime.getRuntime().exec(
-					new String[] { "ip", "rule", "show" });
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					p.getInputStream()));
-			while ((line = in.readLine()) != null) {
-				Matcher m = pa.matcher(line);
-				if (m.matches())
-					rules.add(Integer.parseInt(m.group(1)));
-			}
-			in.close();
-		} catch (IOException e) {
-		}
-		return rules;
-	}
-
-	private void resetRule(NetworkInterface iface) {
-		int table = mapIfaceToTable(iface);
-		String[] cmds;
-		/* Unfortunately ip rule delete table X doesn't work :-( */
-		List<Integer> rules = existingRules(table);
-
-		cmds = new String[rules.size() + 1];
-		cmds[0] = "ip route flush table " + table;
-
-		for (int i = 1; i < cmds.length; ++i)
-			cmds[i] = "ip rule delete prio " + rules.get(i - 1);
-
-		try {
-			runAsRoot(cmds);
-		} catch (Exception e) {
-		}
-	}
-
-	private boolean isMobile(String ifaceName) {
-		return ifaceName.startsWith("rmnet");
-	}
-
-	private boolean isMobile(NetworkInterface iface) {
-		return isMobile(iface.getName());
-	}
-
-	private boolean isIPv6(String hostAddr) {
-		return hostAddr.contains(":");
-	}
-
-	private String getIPVersion(String hostAddr) {
-		if (isIPv6(hostAddr))
-			return "-6";
-		return "-4";
-	}
-
-	private String removeScope(String hostAddr) {
-		if (hostAddr == null)
-			return null;
-		int pos = hostAddr.indexOf("%");
-		if (pos == -1)
-			return hostAddr;
-		return hostAddr.substring(0, pos);
-	}
-
 	/* Add Policy routing for interface */
 	private void setupRule(NetworkInterface iface, boolean update) {
-		int table = mapIfaceToTable(iface);
+		int table = IPRouteUtils.mapIfaceToTable(iface);
 
 		if (update)
-			resetRule(iface);
+			IPRouteUtils.resetRule(iface);
 
 		if (iface.getInterfaceAddresses().isEmpty())
 			return;
@@ -182,14 +36,14 @@ public class IPRoute {
 			InetAddress addr = intfAddr.getAddress();
 			int prefix = intfAddr.getNetworkPrefixLength();
 			InetAddress subnet;
-			String gateway = getGateway(iface);
+			String gateway = IPRouteUtils.getGateway(iface);
 
 			if (gateway == null)
 				continue;
-			gateway = removeScope(gateway);
+			gateway = IPRouteUtils.removeScope(gateway);
 
 			try {
-				subnet = toSubnet(addr, prefix);
+				subnet = IPRouteUtils.toSubnet(addr, prefix);
 			} catch (UnknownHostException e) {
 				continue;
 			}
@@ -197,32 +51,35 @@ public class IPRoute {
 			if (addr.isLinkLocalAddress())
 				continue;
 
-			String hostAddr = removeScope(addr.getHostAddress());
-			String subnetAddr = removeScope(subnet.getHostAddress());
+			String hostAddr = IPRouteUtils.removeScope(addr.getHostAddress());
+			String subnetAddr = IPRouteUtils.removeScope(subnet
+					.getHostAddress());
 			if (hostAddr == null || subnetAddr == null) {
 				Log.w(Manager.TAG, "hostAddr and/or subnetAddr is null");
 				continue;
 			}
 
 			try {
-				runAsRoot(new String[] {
-						"ip " + getIPVersion(hostAddr) + " rule add from "
+				IPRouteUtils.runAsRoot(new String[] {
+						"ip " + IPRouteUtils.getIPVersion(hostAddr)
+								+ " rule add from "
 								+ hostAddr + " table "
 								+ table,
-						"ip " + getIPVersion(subnetAddr) + " route add "
+						"ip " + IPRouteUtils.getIPVersion(subnetAddr)
+								+ " route add "
 								+ subnetAddr + "/"
 								+ prefix + " dev " + iface.getName()
 								+ " scope link table " + table,
-						"ip " + getIPVersion(gateway)
+						"ip " + IPRouteUtils.getIPVersion(gateway)
 								+ " route add default via " + gateway + " dev "
 								+ iface.getName() + " table " + table, });
-				if (isMobile(iface)) {
+				if (IPRouteUtils.isMobile(iface)) {
 					if (Config.defaultRouteData)
-						runAsRoot("ip " + getIPVersion(gateway)
-								+ " route change default via " + gateway
-								+ " dev " + iface.getName());
+						IPRouteUtils.setDefaultRoute(iface.getName(), gateway,
+								false);
 					if (Config.dataBackup)
-						runAsRoot("ip link set dev " + iface.getName()
+						IPRouteUtils.runAsRoot("ip link set dev "
+								+ iface.getName()
 								+ " multipath backup");
 					mobileDataMgr.keepMobileConnectionAlive();
 				}
@@ -266,42 +123,6 @@ public class IPRoute {
 
 		// if WLan iface has been modified, default route will be wrong
 		if (Config.defaultRouteData)
-			setDefaultRoute();
-	}
-
-	public boolean setDefaultRoute() {
-		String iface = getDefaultIFace();
-
-		String gateway = getGateway(iface);
-		if (gateway == null)
-			return false;
-		gateway = removeScope(gateway);
-		try {
-			runAsRoot("ip " + getIPVersion(gateway)
-					+ " route change default via " + gateway + " dev "
-					+ iface);
-			// if there where no default route
-			runAsRoot("ip " + getIPVersion(gateway) + " route add default via "
-					+ gateway + " dev " + iface);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return true;
-	}
-
-	public boolean setDataBackup() {
-		String status;
-		if (Config.dataBackup)
-			status = "backup";
-		else
-			status = "on";
-
-		try {
-			runAsRoot("ip link set dev " + DEFAULT_DATA_IFACE + " multipath "
-					+ status);
-		} catch (Exception e) {
-			return false;
-		}
-		return true;
+			IPRouteUtils.setDefaultRoute();
 	}
 }
