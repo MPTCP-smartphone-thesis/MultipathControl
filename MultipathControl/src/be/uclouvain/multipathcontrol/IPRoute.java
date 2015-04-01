@@ -60,7 +60,7 @@ public class IPRoute {
 			}
 
 			try {
-				IPRouteUtils.runAsRoot(new String[] {
+				Cmd.runAsRoot(new String[] {
 						"ip " + IPRouteUtils.getIPVersion(hostAddr)
 								+ " rule add from "
 								+ hostAddr + " table "
@@ -78,7 +78,7 @@ public class IPRoute {
 						IPRouteUtils.setDefaultRoute(iface.getName(), gateway,
 								false);
 					if (Config.dataBackup)
-						IPRouteUtils.runAsRoot("ip link set dev "
+						Cmd.runAsRoot("ip link set dev "
 								+ iface.getName()
 								+ " multipath backup");
 					mobileDataMgr.keepMobileConnectionAlive();

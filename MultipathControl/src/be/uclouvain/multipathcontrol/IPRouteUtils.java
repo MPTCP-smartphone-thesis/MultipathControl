@@ -1,8 +1,5 @@
 package be.uclouvain.multipathcontrol;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -12,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import android.util.Log;
 
 public class IPRouteUtils {
 
@@ -70,17 +65,6 @@ public class IPRouteUtils {
 		return getGateway(iface.getName());
 	}
 
-	public static Process runAsRoot(String cmd) throws Exception {
-		Log.d(Manager.TAG, "command: " + cmd);
-		return Runtime.getRuntime().exec(new String[] { "su", "-c", cmd });
-	}
-
-	public static void runAsRoot(String[] cmds) throws Exception {
-		for (String cmd : cmds) {
-			runAsRoot(cmd);
-		}
-	}
-
 	public static InetAddress toSubnet(InetAddress addr, int prefix)
 			throws UnknownHostException {
 		int address = packAddress(addr);
@@ -94,24 +78,15 @@ public class IPRouteUtils {
 		// We cannot use an array of lists :-)
 		List<List<Integer>> allRules = new ArrayList<List<Integer>>(2);
 
-		try {
-			String line;
-			for (int i = 0; i < ipVersions.length; i++) {
-				List<Integer> rules = new ArrayList<Integer>();
-				allRules.add(i, rules);
-				Process p = Runtime.getRuntime().exec(
-						new String[] { "ip", "-" + ipVersions[i], "rule",
-								"show" });
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						p.getInputStream()));
-				while ((line = in.readLine()) != null) {
-					Matcher m = pa.matcher(line);
-					if (m.matches())
-						rules.add(Integer.parseInt(m.group(1)));
-				}
-				in.close();
+		for (int i = 0; i < ipVersions.length; i++) {
+			List<Integer> rules = new ArrayList<Integer>();
+			allRules.add(i, rules);
+			for (String line : Cmd.getAllLines("ip -" + ipVersions[i]
+					+ " rule show")) {
+				Matcher m = pa.matcher(line);
+				if (m.matches())
+					rules.add(Integer.parseInt(m.group(1)));
 			}
-		} catch (IOException e) {
 		}
 		return allRules;
 	}
@@ -133,7 +108,7 @@ public class IPRouteUtils {
 						+ rules.get(i - 1);
 
 			try {
-				runAsRoot(cmds);
+				Cmd.runAsRoot(cmds);
 			} catch (Exception e) {
 			}
 		}
@@ -172,11 +147,11 @@ public class IPRouteUtils {
 			return false;
 		gateway = removeScope(gateway);
 		try {
-			runAsRoot("ip " + getIPVersion(gateway)
+			Cmd.runAsRoot("ip " + getIPVersion(gateway)
 					+ " route change default via " + gateway + " dev " + iface);
 			// if there where no default route
-			runAsRoot("ip " + getIPVersion(gateway) + " route add default via "
-					+ gateway + " dev " + iface);
+			Cmd.runAsRoot("ip " + getIPVersion(gateway)
+					+ " route add default via " + gateway + " dev " + iface);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -199,8 +174,8 @@ public class IPRouteUtils {
 			status = "on";
 
 		try {
-			runAsRoot("ip link set dev " + DEFAULT_DATA_IFACE + " multipath "
-					+ status);
+			Cmd.runAsRoot("ip link set dev " + DEFAULT_DATA_IFACE
+					+ " multipath " + status);
 		} catch (Exception e) {
 			return false;
 		}
