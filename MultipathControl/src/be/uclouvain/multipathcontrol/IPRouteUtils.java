@@ -19,6 +19,7 @@ public class IPRouteUtils {
 
 	private static final String DEFAULT_DATA_IFACE = "rmnet0"; // TODO: will not work when using 2 SIMs cards...
 	private static final String DEFAULT_WLAN_IFACE = "wlan0";
+	private static final int ipVersions[] = { 4, 6 };
 
 	public static String getDefaultIFace() {
 		if (Config.defaultRouteData)
@@ -90,9 +91,8 @@ public class IPRouteUtils {
 
 	public static List<List<Integer>> existingRules(int table) {
 		Pattern pa = Pattern.compile("^([0-9]+):.* lookup " + table + " $");
-		// We cannot use a array of list :-)
+		// We cannot use an array of lists :-)
 		List<List<Integer>> allRules = new ArrayList<List<Integer>>(2);
-		int ipVersions[] = { 4, 6 };
 
 		try {
 			String line;
@@ -121,7 +121,7 @@ public class IPRouteUtils {
 		String[] cmds;
 		/* Unfortunately ip rule delete table X doesn't work :-( */
 		List<List<Integer>> allRules = existingRules(table);
-		int ipVersions[] = { 4, 6 };
+
 		for (int ip = 0; ip < ipVersions.length; ip++) {
 			List<Integer> rules = allRules.get(ip);
 
