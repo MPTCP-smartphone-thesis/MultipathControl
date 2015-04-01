@@ -88,43 +88,54 @@ public class IPRouteUtils {
 		return unpackAddress(subnet);
 	}
 
-	public static List<Integer> existingRules(int table) {
+	public static List<List<Integer>> existingRules(int table) {
 		Pattern pa = Pattern.compile("^([0-9]+):.* lookup " + table + " $");
-		List<Integer> rules = new ArrayList<Integer>();
+		// We cannot use a array of list :-)
+		List<List<Integer>> allRules = new ArrayList<List<Integer>>(2);
+		int ipVersions[] = { 4, 6 };
 
 		try {
 			String line;
-			Process p = Runtime.getRuntime().exec(
-					new String[] { "ip", "rule", "show" });
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					p.getInputStream()));
-			while ((line = in.readLine()) != null) {
-				Matcher m = pa.matcher(line);
-				if (m.matches())
-					rules.add(Integer.parseInt(m.group(1)));
+			for (int i = 0; i < ipVersions.length; i++) {
+				List<Integer> rules = new ArrayList<Integer>();
+				allRules.add(i, rules);
+				Process p = Runtime.getRuntime().exec(
+						new String[] { "ip", "-" + ipVersions[i], "rule",
+								"show" });
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						p.getInputStream()));
+				while ((line = in.readLine()) != null) {
+					Matcher m = pa.matcher(line);
+					if (m.matches())
+						rules.add(Integer.parseInt(m.group(1)));
+				}
+				in.close();
 			}
-			in.close();
 		} catch (IOException e) {
 		}
-		return rules;
+		return allRules;
 	}
 
 	public static void resetRule(NetworkInterface iface) {
 		int table = mapIfaceToTable(iface);
 		String[] cmds;
 		/* Unfortunately ip rule delete table X doesn't work :-( */
-		List<Integer> rules = existingRules(table);
+		List<List<Integer>> allRules = existingRules(table);
+		int ipVersions[] = { 4, 6 };
+		for (int ip = 0; ip < ipVersions.length; ip++) {
+			List<Integer> rules = allRules.get(ip);
 
-		cmds = new String[rules.size() + 1];
-		cmds[0] = "ip route flush table " + table;
+			cmds = new String[rules.size() + 1];
+			cmds[0] = "ip -" + ipVersions[ip] + " route flush table " + table;
 
-		for (int i = 1; i < cmds.length; ++i)
-			cmds[i] = "ip rule delete prio " + rules.get(i - 1);
+			for (int i = 1; i < cmds.length; ++i)
+				cmds[i] = "ip -" + ipVersions[ip] + " rule delete prio "
+						+ rules.get(i - 1);
 
-		try {
-			runAsRoot(cmds);
-		} catch (Exception e) {
+			try {
+				runAsRoot(cmds);
+			} catch (Exception e) {
+			}
 		}
 	}
 
