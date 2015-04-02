@@ -18,6 +18,7 @@ public class MainActivity extends Activity {
 	private Switch defaultDataSwitch;
 	private Switch dataBackupSwitch;
 	private Switch saveBatterySwitch;
+	private Button tcpCCButton;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +29,7 @@ public class MainActivity extends Activity {
 		defaultDataSwitch = (Switch) findViewById(R.id.switch_default_data);
 		dataBackupSwitch = (Switch) findViewById(R.id.switch_data_backup);
 		saveBatterySwitch = (Switch) findViewById(R.id.switch_save_battery);
-		Button tcpCCButton = (Button) findViewById(R.id.button_tcp_cc);
+		tcpCCButton = (Button) findViewById(R.id.button_tcp_cc);
 
 		mpctrl = Manager.create(this);
 		if (mpctrl == null) {
@@ -71,6 +72,8 @@ public class MainActivity extends Activity {
 		defaultDataSwitch.setChecked(Config.defaultRouteData);
 		dataBackupSwitch.setChecked(Config.dataBackup);
 		saveBatterySwitch.setChecked(Config.saveBattery);
+		tcpCCButton.setText(getText(R.string.button_tcp_cc) + ": "
+				+ Config.tcpcc);
 	}
 
 	private OnCheckedChangeListener onCheckedChangeListernerMultiIface = new OnCheckedChangeListener() {

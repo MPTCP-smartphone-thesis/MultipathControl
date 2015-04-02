@@ -13,7 +13,7 @@ public class TCPCCActivity extends ListActivity {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_1, Sysctl.getAvailableCC());
 		setListAdapter(adapter);
-		setSelected(Sysctl.getCC());
+		setSelected(Config.tcpcc);
 	}
 
 	private void setSelected(String item) {
