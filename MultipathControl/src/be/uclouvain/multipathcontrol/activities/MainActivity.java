@@ -64,6 +64,7 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
+		Config.getDynamicConfig();
 		setChecked();
 	}
 

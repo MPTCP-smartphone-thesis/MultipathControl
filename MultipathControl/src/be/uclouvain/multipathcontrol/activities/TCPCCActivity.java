@@ -1,13 +1,13 @@
 package be.uclouvain.multipathcontrol.activities;
 
-import be.uclouvain.multipathcontrol.global.Config;
-import be.uclouvain.multipathcontrol.system.Sysctl;
 import android.app.ListActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+import be.uclouvain.multipathcontrol.global.Config;
+import be.uclouvain.multipathcontrol.system.Sysctl;
 
 public class TCPCCActivity extends ListActivity {
 	public void onCreate(Bundle icicle) {
@@ -28,7 +28,7 @@ public class TCPCCActivity extends ListActivity {
 		if (Sysctl.setCC(item)) {
 			setSelected(item);
 			Config.tcpcc = item;
-			Config.saveStatus(this);
+			Config.saveStatus(TCPCCActivity.this);
 		} else
 			Toast.makeText(TCPCCActivity.this, "Not able to set " + item,
 					Toast.LENGTH_LONG).show();

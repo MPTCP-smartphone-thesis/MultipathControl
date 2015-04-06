@@ -35,6 +35,10 @@ public class Config {
 			Sysctl.setCC(tcpcc);
 	}
 
+	public static void getDynamicConfig() {
+		tcpcc = Sysctl.getCC();
+	}
+
 	public static void saveStatus(Context context) {
 		SharedPreferences settings = context.getSharedPreferences(PREFS_NAME,
 				Context.MODE_PRIVATE);
