@@ -14,10 +14,8 @@ import be.uclouvain.multipathcontrol.global.Config;
 
 public class IPRouteUtils {
 
-	private static final String DEFAULT_DATA_IFACE = "rmnet0"; // TODO: will not
-																// work when
-																// using 2 SIMs
-																// cards...
+	// TODO: will not work when using 2 SIMs cards...
+	private static final String DEFAULT_DATA_IFACE = "rmnet0";
 	private static final String DEFAULT_WLAN_IFACE = "wlan0";
 	private static final int ipVersions[] = { 4, 6 };
 
