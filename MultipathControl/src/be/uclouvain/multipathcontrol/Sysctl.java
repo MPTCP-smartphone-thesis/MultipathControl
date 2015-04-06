@@ -1,16 +1,36 @@
 package be.uclouvain.multipathcontrol;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class Sysctl {
 
+	private static final String BASE = "/proc/sys";
 	private Sysctl() {
 	}
 
 	public static String getSysctl(String key) {
-		String line = Cmd.getFirstLine("sysctl " + key);
+		// String line = Cmd.getFirstLine("sysctl " + key);
+		String path = BASE + '/' + key.replace('.', '/');
+		BufferedReader br = null;
+		String line = null;
+		try {
+			br = new BufferedReader(new FileReader(path));
+			line = br.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (br != null)
+					br.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
 		if (line == null || line.isEmpty())
 			return null;
-		return line.substring(key.length() + 3);
+		return line;
 	}
 
 	public static String[] getAvailableCC() {
@@ -26,8 +46,8 @@ public class Sysctl {
 
 	public static boolean setCC(String value) {
 		try {
-			Cmd.runAsRoot("sysctl -w net.ipv4.tcp_congestion_control="
-					+ value);
+			Cmd.runAsRoot("echo " + value + " > " + BASE
+					+ "/net/ipv4/tcp_congestion_control");
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
