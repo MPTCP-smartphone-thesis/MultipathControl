@@ -1,10 +1,12 @@
-package be.uclouvain.multipathcontrol;
+package be.uclouvain.multipathcontrol.ui;
 
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import be.uclouvain.multipathcontrol.R;
+import be.uclouvain.multipathcontrol.activities.MainActivity;
 
 public class Notifications {
 

@@ -1,9 +1,11 @@
-package be.uclouvain.multipathcontrol;
+package be.uclouvain.multipathcontrol.ifaces;
 
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
+
+import be.uclouvain.multipathcontrol.global.Manager;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -74,7 +76,7 @@ public class MobileDataMgr {
 	/**
 	 * Transform host name in int value used by
 	 * {@link ConnectivityManager.requestRouteToHost} method
-	 *
+	 * 
 	 * @param hostname
 	 * @return -1 if the host doesn't exists, elsewhere its translation to an
 	 *         integer
@@ -91,9 +93,9 @@ public class MobileDataMgr {
 
 	/**
 	 * Enable mobile connection even when switching to WiFi
-	 *
+	 * 
 	 * Source: http://stackoverflow.com/a/4756630
-	 *
+	 * 
 	 * @param address
 	 *            the address to enable
 	 * @return true for success, else false

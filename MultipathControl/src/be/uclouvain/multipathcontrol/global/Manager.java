@@ -1,6 +1,8 @@
-package be.uclouvain.multipathcontrol;
+package be.uclouvain.multipathcontrol.global;
 
 import java.io.File;
+
+import be.uclouvain.multipathcontrol.MPCtrl;
 
 import android.content.Context;
 import android.util.Log;
@@ -17,7 +19,7 @@ public class Manager {
 
 	/**
 	 * Create a new instance of MPCtrl.
-	 *
+	 * 
 	 * @return null if you're not root.
 	 */
 	public static MPCtrl create(Context context) {
@@ -35,7 +37,7 @@ public class Manager {
 
 	/**
 	 * Destroy the instance only if we are using this context.
-	 *
+	 * 
 	 * @return true if the instance has really been fully destroyed
 	 */
 	public static boolean destroy(Context context) {

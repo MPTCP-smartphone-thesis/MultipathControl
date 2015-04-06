@@ -19,7 +19,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainActivity"
+            android:name="be.uclouvain.multipathcontrol.activities.MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask" >
             <intent-filter>
@@ -30,7 +30,7 @@
         </activity>
 
         <receiver
-            android:name=".Boot"
+            android:name="be.uclouvain.multipathcontrol.services.Boot"
             android:enabled="true"
             android:exported="true" >
             <intent-filter>
@@ -39,10 +39,10 @@
         </receiver>
 
         <service
-            android:name=".MainService"
+            android:name="be.uclouvain.multipathcontrol.services.MainService"
             android:label="Main Service" >
         </service>
-        <activity android:name="TCPCCActivity"
+        <activity android:name="be.uclouvain.multipathcontrol.activities.TCPCCActivity"
             android:label="@string/button_tcp_cc"
             android:launchMode="singleTask">
         </activity>

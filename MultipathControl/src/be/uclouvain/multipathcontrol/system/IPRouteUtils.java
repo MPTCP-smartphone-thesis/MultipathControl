@@ -1,4 +1,4 @@
-package be.uclouvain.multipathcontrol;
+package be.uclouvain.multipathcontrol.system;
 
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -10,9 +10,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import be.uclouvain.multipathcontrol.global.Config;
+
 public class IPRouteUtils {
 
-	private static final String DEFAULT_DATA_IFACE = "rmnet0"; // TODO: will not work when using 2 SIMs cards...
+	private static final String DEFAULT_DATA_IFACE = "rmnet0"; // TODO: will not
+																// work when
+																// using 2 SIMs
+																// cards...
 	private static final String DEFAULT_WLAN_IFACE = "wlan0";
 	private static final int ipVersions[] = { 4, 6 };
 

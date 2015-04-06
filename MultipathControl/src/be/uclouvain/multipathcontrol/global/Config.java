@@ -1,5 +1,6 @@
-package be.uclouvain.multipathcontrol;
+package be.uclouvain.multipathcontrol.global;
 
+import be.uclouvain.multipathcontrol.system.Sysctl;
 import android.content.Context;
 import android.content.SharedPreferences;
 

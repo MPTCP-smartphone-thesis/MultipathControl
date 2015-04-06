@@ -1,5 +1,7 @@
-package be.uclouvain.multipathcontrol;
+package be.uclouvain.multipathcontrol.activities;
 
+import be.uclouvain.multipathcontrol.global.Config;
+import be.uclouvain.multipathcontrol.system.Sysctl;
 import android.app.ListActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -27,8 +29,7 @@ public class TCPCCActivity extends ListActivity {
 			setSelected(item);
 			Config.tcpcc = item;
 			Config.saveStatus(this);
-		}
-		else
+		} else
 			Toast.makeText(TCPCCActivity.this, "Not able to set " + item,
 					Toast.LENGTH_LONG).show();
 	}

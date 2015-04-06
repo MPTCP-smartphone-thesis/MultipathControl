@@ -1,4 +1,4 @@
-package be.uclouvain.multipathcontrol;
+package be.uclouvain.multipathcontrol.ifaces;
 
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -7,6 +7,11 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
+
+import be.uclouvain.multipathcontrol.global.Config;
+import be.uclouvain.multipathcontrol.global.Manager;
+import be.uclouvain.multipathcontrol.system.Cmd;
+import be.uclouvain.multipathcontrol.system.IPRouteUtils;
 
 import android.util.Log;
 
@@ -62,13 +67,11 @@ public class IPRoute {
 			try {
 				Cmd.runAsRoot(new String[] {
 						"ip " + IPRouteUtils.getIPVersion(hostAddr)
-								+ " rule add from "
-								+ hostAddr + " table "
+								+ " rule add from " + hostAddr + " table "
 								+ table,
 						"ip " + IPRouteUtils.getIPVersion(subnetAddr)
-								+ " route add "
-								+ subnetAddr + "/"
-								+ prefix + " dev " + iface.getName()
+								+ " route add " + subnetAddr + "/" + prefix
+								+ " dev " + iface.getName()
 								+ " scope link table " + table,
 						"ip " + IPRouteUtils.getIPVersion(gateway)
 								+ " route add default via " + gateway + " dev "
@@ -78,8 +81,7 @@ public class IPRoute {
 						IPRouteUtils.setDefaultRoute(iface.getName(), gateway,
 								false);
 					if (Config.dataBackup)
-						Cmd.runAsRoot("ip link set dev "
-								+ iface.getName()
+						Cmd.runAsRoot("ip link set dev " + iface.getName()
 								+ " multipath backup");
 					mobileDataMgr.keepMobileConnectionAlive();
 				}
@@ -94,8 +96,7 @@ public class IPRoute {
 			for (NetworkInterface iface : Collections.list(NetworkInterface
 					.getNetworkInterfaces())) {
 				int addrs = Config.mEnabled ? iface.getInterfaceAddresses()
-						.hashCode()
-						: 1;
+						.hashCode() : 1;
 				String name = iface.getName();
 
 				if (iface.isLoopback())

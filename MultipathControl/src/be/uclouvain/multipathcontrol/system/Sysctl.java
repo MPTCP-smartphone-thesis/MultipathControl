@@ -1,4 +1,4 @@
-package be.uclouvain.multipathcontrol;
+package be.uclouvain.multipathcontrol.system;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -7,6 +7,7 @@ import java.io.IOException;
 public class Sysctl {
 
 	private static final String BASE = "/proc/sys";
+
 	private Sysctl() {
 	}
 

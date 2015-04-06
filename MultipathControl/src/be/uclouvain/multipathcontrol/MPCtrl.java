@@ -1,5 +1,11 @@
 package be.uclouvain.multipathcontrol;
 
+import be.uclouvain.multipathcontrol.global.Config;
+import be.uclouvain.multipathcontrol.global.Manager;
+import be.uclouvain.multipathcontrol.ifaces.IPRoute;
+import be.uclouvain.multipathcontrol.ifaces.MobileDataMgr;
+import be.uclouvain.multipathcontrol.system.IPRouteUtils;
+import be.uclouvain.multipathcontrol.ui.Notifications;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -126,6 +132,7 @@ public class MPCtrl {
 	 */
 	private Runnable runnable = new Runnable() {
 		final long fiveSecondsMs = 5 * 1000;
+
 		@Override
 		public void run() {
 			long nowTime = System.currentTimeMillis();

@@ -1,10 +1,12 @@
-package be.uclouvain.multipathcontrol;
+package be.uclouvain.multipathcontrol.system;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import be.uclouvain.multipathcontrol.global.Manager;
 
 import android.util.Log;
 
@@ -63,8 +65,7 @@ public class Cmd {
 				p = runAsRoot(cmd);
 			else
 				p = runAsUser(cmd);
-			in = new BufferedReader(new InputStreamReader(
-					p.getInputStream()));
+			in = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			while ((line = in.readLine()) != null) {
 				lines.add(line);
 			}

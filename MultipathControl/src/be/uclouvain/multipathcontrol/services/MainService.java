@@ -1,5 +1,7 @@
-package be.uclouvain.multipathcontrol;
+package be.uclouvain.multipathcontrol.services;
 
+import be.uclouvain.multipathcontrol.MPCtrl;
+import be.uclouvain.multipathcontrol.global.Manager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
