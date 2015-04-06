@@ -12,6 +12,7 @@ public class Config {
 	public static final String PREFS_DATA_BACKUP = "dataBackup";
 	public static final String PREFS_SAVE_BATTERY = "saveBattery";
 	public static final String PREFS_TCPCC = "tcpcc";
+	public static final String PREFS_STATS_SET = "statsSet";
 
 	public static boolean mEnabled;
 	public static boolean defaultRouteData;
