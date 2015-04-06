@@ -45,15 +45,6 @@
         android:text="@string/switch_data_backup_desc"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
-    <TextView
-        android:id="@+id/text_save_battery_desc"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/switch_save_battery"
-        android:layout_below="@+id/switch_save_battery"
-        android:text="@string/switch_save_battery_desc"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-
     <Switch
         android:id="@+id/switch_save_battery"
         android:layout_width="fill_parent"
@@ -64,11 +55,39 @@
         android:contentDescription="@string/switch_save_battery_desc"
         android:text="@string/switch_save_battery" />
 
+    <TextView
+        android:id="@+id/text_save_battery_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_save_battery"
+        android:layout_below="@+id/switch_save_battery"
+        android:text="@string/switch_save_battery_desc"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <Switch
+        android:id="@+id/switch_ipv6"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_data_backup"
+        android:layout_below="@+id/text_save_battery_desc"
+        android:layout_marginTop="20dp"
+        android:contentDescription="@string/switch_ipv6_desc"
+        android:text="@string/switch_ipv6" />
+
+    <TextView
+        android:id="@+id/text_ipv6_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_ipv6"
+        android:layout_below="@+id/switch_ipv6"
+        android:text="@string/switch_ipv6_desc"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
     <Button
         android:id="@+id/button_tcp_cc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/text_save_battery_desc"
+        android:layout_below="@+id/text_ipv6_desc"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:text="@string/button_tcp_cc" />

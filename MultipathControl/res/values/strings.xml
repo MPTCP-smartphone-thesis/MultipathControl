@@ -8,7 +8,9 @@
     <string name="switch_data_backup">Set cellular as backup</string>
     <string name="switch_data_backup_desc">Patched version of iproute is needed</string>
     <string name="switch_save_battery">Save battery by allowing deep sleep mode</string>
-	<string name="switch_save_battery_desc">The cellular connection will not be maintained all the time. Then when switching to a new Wi-Fi router, the cellular connection will be stopped for a few micro seconds but it\'s supported by MPTCP</string>
+    <string name="switch_save_battery_desc">The cellular connection will not be maintained all the time. Then when switching to a new Wi-Fi router, the cellular connection will be stopped for a few micro seconds but it\'s supported by MPTCP</string>
+    <string name="switch_ipv6">Enable IPv6 support</string>
+    <string name="switch_ipv6_desc">This application supports IPv6 but not our proxy</string>
     <string name="notification_title">Multipath Enabled</string>
     <string name="notification_text">Click to change options</string>
     <string name="button_tcp_cc">TCP Congestion Control Algorithms</string>

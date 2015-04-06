@@ -60,4 +60,12 @@ public class Sysctl {
 	public static boolean setCC(String value) {
 		return setSysctl("net.ipv4.tcp_congestion_control", value);
 	}
+
+	public static boolean getIPv6() {
+		return getSysctl("net.ipv6.conf.all.disable_ipv6").equals("0");
+	}
+
+	public static boolean setIPv6(boolean ipv6) {
+		return setSysctl("net.ipv6.conf.all.disable_ipv6", ipv6 ? "0" : "1");
+	}
 }

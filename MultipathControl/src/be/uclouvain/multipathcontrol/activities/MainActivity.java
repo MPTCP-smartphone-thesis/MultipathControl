@@ -15,6 +15,7 @@ import be.uclouvain.multipathcontrol.R;
 import be.uclouvain.multipathcontrol.global.Config;
 import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.services.MainService;
+import be.uclouvain.multipathcontrol.system.Sysctl;
 
 public class MainActivity extends Activity {
 
@@ -23,6 +24,7 @@ public class MainActivity extends Activity {
 	private Switch defaultDataSwitch;
 	private Switch dataBackupSwitch;
 	private Switch saveBatterySwitch;
+	private Switch ipv6Switch;
 	private Button tcpCCButton;
 
 	@Override
@@ -34,6 +36,7 @@ public class MainActivity extends Activity {
 		defaultDataSwitch = (Switch) findViewById(R.id.switch_default_data);
 		dataBackupSwitch = (Switch) findViewById(R.id.switch_data_backup);
 		saveBatterySwitch = (Switch) findViewById(R.id.switch_save_battery);
+		ipv6Switch = (Switch) findViewById(R.id.switch_ipv6);
 		tcpCCButton = (Button) findViewById(R.id.button_tcp_cc);
 
 		mpctrl = Manager.create(this);
@@ -54,6 +57,7 @@ public class MainActivity extends Activity {
 				.setOnCheckedChangeListener(onCheckedChangeListernerDataBackup);
 		saveBatterySwitch
 				.setOnCheckedChangeListener(onCheckedChangeListernerSaveBattery);
+		ipv6Switch.setOnCheckedChangeListener(onCheckedChangeListernerIPv6);
 		tcpCCButton.setOnClickListener(onClickListenerTcpCC);
 
 		// start a new service if needed
@@ -78,6 +82,7 @@ public class MainActivity extends Activity {
 		defaultDataSwitch.setChecked(Config.defaultRouteData);
 		dataBackupSwitch.setChecked(Config.dataBackup);
 		saveBatterySwitch.setChecked(Config.saveBattery);
+		ipv6Switch.setChecked(Config.ipv6);
 		tcpCCButton.setText(getText(R.string.button_tcp_cc) + ": "
 				+ Config.tcpcc);
 	}
@@ -118,6 +123,20 @@ public class MainActivity extends Activity {
 				Toast.makeText(
 						MainActivity.this,
 						"Please disconnect/reconnect cellular interface or reboot",
+						Toast.LENGTH_LONG).show();
+		}
+	};
+
+	private OnCheckedChangeListener onCheckedChangeListernerIPv6 = new OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView,
+				boolean isChecked) {
+			if (Sysctl.setIPv6(isChecked)) {
+				Config.ipv6 = isChecked;
+				Config.saveStatus(MainActivity.this);
+			} else
+				Toast.makeText(MainActivity.this,
+						"Not able to change IPv6 settings",
 						Toast.LENGTH_LONG).show();
 		}
 	};
