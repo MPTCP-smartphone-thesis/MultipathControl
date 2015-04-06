@@ -12,7 +12,7 @@ public class Sysctl {
 	}
 
 	public static String getSysctl(String key) {
-		// String line = Cmd.getFirstLine("sysctl " + key);
+		// String line = Cmd.getFirstLine("sysctl " + key); // busybox is needed
 		String path = BASE + '/' + key.replace('.', '/');
 		BufferedReader br = null;
 		String line = null;
@@ -34,6 +34,18 @@ public class Sysctl {
 		return line;
 	}
 
+	public static boolean setSysctl(String key, String value) {
+		int rc = 1;
+		try {
+			String path = BASE + '/' + key.replace('.', '/');
+			rc = Cmd.runAsRoot("echo " + value + " > " + path).exitValue();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return rc == 0; // delayed... getSysctl(key).equals(value);
+	}
+
 	public static String[] getAvailableCC() {
 		String line = getSysctl("net.ipv4.tcp_available_congestion_control");
 		if (line == null)
@@ -46,13 +58,6 @@ public class Sysctl {
 	}
 
 	public static boolean setCC(String value) {
-		try {
-			Cmd.runAsRoot("echo " + value + " > " + BASE
-					+ "/net/ipv4/tcp_congestion_control");
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true; // delayed... getCC().equals(value);
+		return setSysctl("net.ipv4.tcp_congestion_control", value);
 	}
 }
