@@ -25,10 +25,10 @@ public class TCPCCActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		String item = (String) getListAdapter().getItem(position);
-		if (Sysctl.setCC(item)) {
+		if (!Config.tcpcc.equals(item) && Sysctl.setCC(item)) {
 			setSelected(item);
 			Config.tcpcc = item;
-			Config.saveStatus(TCPCCActivity.this);
+			Config.saveStatus(getApplicationContext());
 		} else
 			Toast.makeText(TCPCCActivity.this, "Not able to set " + item,
 					Toast.LENGTH_LONG).show();

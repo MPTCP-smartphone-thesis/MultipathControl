@@ -17,7 +17,6 @@ import be.uclouvain.multipathcontrol.global.Config;
 import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.services.MainService;
 import be.uclouvain.multipathcontrol.stats.JSONSender;
-import be.uclouvain.multipathcontrol.stats.SaveDataApp;
 import be.uclouvain.multipathcontrol.system.Sysctl;
 
 public class MainActivity extends Activity {
@@ -64,16 +63,7 @@ public class MainActivity extends Activity {
 		tcpCCButton.setOnClickListener(onClickListenerTcpCC);
 
 		Button testButton = (Button) findViewById(R.id.button_send_data);
-		testButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Log.d(Manager.TAG,
-						"New data app: "
-								+ new SaveDataApp(getApplicationContext())
-										.getTimestamp());
-				JSONSender.sendAll(getApplicationContext());
-			}
-		});
+		testButton.setOnClickListener(onClickListenerSend);
 
 		// start a new service if needed
 		startService(new Intent(this, MainService.class));
@@ -146,9 +136,9 @@ public class MainActivity extends Activity {
 		@Override
 		public void onCheckedChanged(CompoundButton buttonView,
 				boolean isChecked) {
-			if (Sysctl.setIPv6(isChecked)) {
+			if (Config.ipv6 != isChecked && Sysctl.setIPv6(isChecked)) {
 				Config.ipv6 = isChecked;
-				Config.saveStatus(MainActivity.this);
+				Config.saveStatus(getApplicationContext());
 			} else
 				Toast.makeText(MainActivity.this,
 						"Not able to change IPv6 settings",
@@ -161,6 +151,14 @@ public class MainActivity extends Activity {
 		public void onClick(View v) {
 			Intent intent = new Intent(MainActivity.this, TCPCCActivity.class);
 			startActivity(intent);
+		}
+	};
+
+	private OnClickListener onClickListenerSend = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			Log.d(Manager.TAG, "Send data from button");
+			JSONSender.sendAll(getApplicationContext());
 		}
 	};
 }
