@@ -3,7 +3,6 @@ package be.uclouvain.multipathcontrol.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,9 +17,7 @@ import be.uclouvain.multipathcontrol.global.Config;
 import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.services.MainService;
 import be.uclouvain.multipathcontrol.stats.JSONSender;
-import be.uclouvain.multipathcontrol.stats.SaveDataAbstract;
 import be.uclouvain.multipathcontrol.stats.SaveDataApp;
-import be.uclouvain.multipathcontrol.stats.StatsCategories;
 import be.uclouvain.multipathcontrol.system.Sysctl;
 
 public class MainActivity extends Activity {
@@ -70,16 +67,9 @@ public class MainActivity extends Activity {
 		testButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// TODO: sendAll, in a separate thread
-				StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
-						.permitAll().build();
-				StrictMode.setThreadPolicy(policy);
-				SaveDataAbstract s = new SaveDataApp(MainActivity.this);
-				JSONSender jsonSender = new JSONSender(MainActivity.this, Long
-						.toString(s.getTimestamp()), StatsCategories.STARTUP);
-				Log.d(Manager.TAG, "Sending: " + jsonSender.getJSONObject());
-				Log.d(Manager.TAG, "Sent!" + jsonSender.send());
-				jsonSender.clear();
+				Log.d(Manager.TAG, "New data app: "
+						+ new SaveDataApp(MainActivity.this).getTimestamp());
+				JSONSender.sendAll(getApplicationContext());
 			}
 		});
 
