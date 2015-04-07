@@ -12,6 +12,7 @@ import be.uclouvain.multipathcontrol.global.Config;
 import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.ifaces.IPRoute;
 import be.uclouvain.multipathcontrol.ifaces.MobileDataMgr;
+import be.uclouvain.multipathcontrol.stats.JSONSender;
 import be.uclouvain.multipathcontrol.stats.SaveDataApp;
 import be.uclouvain.multipathcontrol.system.IPRouteUtils;
 import be.uclouvain.multipathcontrol.ui.Notifications;
@@ -124,13 +125,14 @@ public class MPCtrl {
 		lastTimeHandler = System.currentTimeMillis();
 
 		// First check
-		handler.post(runnable);
+		handler.post(runnableSetMobileDataActive);
+		handler.postDelayed(runnableSendData, 5 * 1000 * 60); // 5min
 	}
 
 	/*
 	 * Ensures that the data interface and WiFi are connected at the same time.
 	 */
-	private Runnable runnable = new Runnable() {
+	private Runnable runnableSetMobileDataActive = new Runnable() {
 		final long fiveSecondsMs = 5 * 1000;
 
 		@Override
@@ -146,4 +148,14 @@ public class MPCtrl {
 		}
 	};
 
+	private Runnable runnableSendData = new Runnable() {
+		final long oneHourMs = 1000 * 60 * 60;
+
+		@Override
+		public void run() {
+			Log.d(Manager.TAG, "Schedule: new upload");
+			JSONSender.sendAll(context);
+			handler.postDelayed(this, oneHourMs);
+		}
+	};
 }
