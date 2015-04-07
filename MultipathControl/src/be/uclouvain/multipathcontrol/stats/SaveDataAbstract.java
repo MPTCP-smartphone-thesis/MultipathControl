@@ -75,6 +75,22 @@ public abstract class SaveDataAbstract {
 		mutex.unlock();
 	}
 
+	public static void removeFromPrefs(SharedPreferences settings,
+			Collection<String> sharedPrefNames, StatsCategories category) {
+		String key = Config.PREFS_STATS_SET + '_' + category;
+
+		mutex.lock();
+
+		Set<String> statsSet = settings.getStringSet(key, null);
+		if (statsSet != null) { // should not be null...
+			statsSet = new HashSet<String>(statsSet);
+			statsSet.removeAll(sharedPrefNames);
+			settings.edit().putStringSet(key, statsSet).commit();
+		}
+
+		mutex.unlock();
+	}
+
 	public String getKey() {
 		return key;
 	}
