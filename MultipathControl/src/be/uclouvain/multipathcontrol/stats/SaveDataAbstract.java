@@ -1,8 +1,11 @@
 package be.uclouvain.multipathcontrol.stats;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -23,6 +26,7 @@ public abstract class SaveDataAbstract {
 	public static final String PREFS_WIFI_MAC = "wifiMac";
 
 	private static String wifiMac = null;
+	private static final Lock mutex = new ReentrantLock(true);
 
 	protected Editor editor;
 	private String key;
@@ -56,6 +60,8 @@ public abstract class SaveDataAbstract {
 			String sharedPrefName, StatsCategories category) {
 		key = Config.PREFS_STATS_SET + '_' + category;
 
+		mutex.lock();
+
 		Set<String> statsSet = settings.getStringSet(key, null);
 		if (statsSet == null)
 			statsSet = new HashSet<String>(1);
@@ -64,7 +70,9 @@ public abstract class SaveDataAbstract {
 			statsSet = new HashSet<String>(statsSet);
 
 		statsSet.add(sharedPrefName);
-		settings.edit().putStringSet(key, statsSet).apply();
+		settings.edit().putStringSet(key, statsSet).commit();
+
+		mutex.unlock();
 	}
 
 	public String getKey() {
