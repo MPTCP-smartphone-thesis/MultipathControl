@@ -8,7 +8,11 @@ import java.util.Set;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -26,6 +30,10 @@ public class JSONSender {
 	private JSONObject jsonObject;
 	private SharedPreferences prefs;
 	private StatsCategories category;
+
+	private static HttpClient httpClient = null;
+	private static String baseUri = "http://" + ConfigServer.hostname + ":"
+			+ ConfigServer.port;
 
 	public JSONSender(Context context, String name, StatsCategories category) {
 		this.category = category;
@@ -88,6 +96,24 @@ public class JSONSender {
 		return category;
 	}
 
+	private static HttpClient getHttpClient() {
+		if (httpClient == null) {
+			DefaultHttpClient defaultHttpClient = new DefaultHttpClient();
+			if (ConfigServer.username != null
+					&& !ConfigServer.username.isEmpty()) {
+				Credentials creds = new UsernamePasswordCredentials(
+						ConfigServer.username, ConfigServer.password);
+				AuthScope scope = new AuthScope(ConfigServer.hostname,
+						ConfigServer.port);
+				CredentialsProvider credProvider = defaultHttpClient
+						.getCredentialsProvider();
+				credProvider.setCredentials(scope, creds);
+			}
+			httpClient = defaultHttpClient;
+		}
+		return httpClient;
+	}
+
 	/**
 	 * Send a POST request to the server (using ConfigServer class) with the
 	 * JSON string from jsonObject
@@ -95,10 +121,9 @@ public class JSONSender {
 	 * @return true if the server return status code 200
 	 */
 	public boolean send() {
-		HttpClient client = new DefaultHttpClient();
-		String uri = "http://" + ConfigServer.hostname + ":"
-				+ ConfigServer.port + "/" + category;
-		HttpPost httpPost = new HttpPost(uri);
+		HttpClient client = getHttpClient();
+
+		HttpPost httpPost = new HttpPost(baseUri + "/" + category);
 		try {
 			httpPost.setEntity(new StringEntity(jsonObject.toString()));
 			httpPost.setHeader("Accept", "application/json");
