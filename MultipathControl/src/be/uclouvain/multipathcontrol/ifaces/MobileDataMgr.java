@@ -5,13 +5,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
 
-import be.uclouvain.multipathcontrol.global.Manager;
-
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
 import android.util.Log;
+import be.uclouvain.multipathcontrol.global.Manager;
 
 public class MobileDataMgr {
 
@@ -53,7 +52,9 @@ public class MobileDataMgr {
 
 	/* Enable having WiFi and 3G/LTE enabled at the same time */
 	public void setMobileDataActive(boolean mEnabled) {
-		Log.d(Manager.TAG, "setMobileDataActive " + new Date());
+		if (Manager.DEBUG)
+			Log.d(Manager.TAG, "setMobileDataActive " + new Date());
+
 		ConnectivityManager cManager = (ConnectivityManager) context
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		if (isMobileDataEnabled() && isWifiConnected() && mEnabled)

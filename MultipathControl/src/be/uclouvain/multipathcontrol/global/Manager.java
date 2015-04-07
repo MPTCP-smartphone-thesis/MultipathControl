@@ -2,16 +2,17 @@ package be.uclouvain.multipathcontrol.global;
 
 import java.io.File;
 
-import be.uclouvain.multipathcontrol.MPCtrl;
-
 import android.content.Context;
 import android.util.Log;
+import be.uclouvain.multipathcontrol.MPCtrl;
 
 public class Manager {
+	public static final String TAG = "mpctrl";
+	public static final boolean DEBUG = false;
+
 	private static MPCtrl mpctrl = null;
 	private static int instances = 0;
 	private static Context usedContext;
-	public static final String TAG = "mpctrl";
 
 	private static boolean checkRoot() {
 		return new File("/system/xbin/su").canExecute();
