@@ -2,7 +2,6 @@ package be.uclouvain.multipathcontrol.stats;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +21,6 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import be.uclouvain.multipathcontrol.global.Config;
 import be.uclouvain.multipathcontrol.global.ConfigServer;
 
@@ -31,6 +29,9 @@ public class JSONSender {
 	private JSONObject jsonObject;
 	private SharedPreferences prefs;
 	private StatsCategories category;
+	private String name;
+
+	private static boolean isSending = false;
 
 	private static HttpClient httpClient = null;
 	private static String baseUri = "http://" + ConfigServer.hostname + ":"
@@ -38,6 +39,7 @@ public class JSONSender {
 
 	public JSONSender(Context context, String name, StatsCategories category) {
 		this.category = category;
+		this.name = name;
 		this.prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE);
 
 		Map<String, ?> map = prefs.getAll();
@@ -53,11 +55,30 @@ public class JSONSender {
 		this.prefs = null;
 	}
 
+	// avoid uploading multiple time
+	private static boolean trySending() {
+		synchronized (JSONSender.class) {
+			if (isSending)
+				return false;
+			isSending = true;
+			return true;
+		}
+	}
+
+	public static void stopSending() {
+		synchronized (JSONSender.class) {
+			isSending = false;
+		}
+	}
+
 	/**
 	 * Get all sets of data that have to be send, prepare the JSON and send it.
 	 * If correctly sent, clear data from settings.
 	 */
 	public static void sendAll(Context context) {
+		if (!trySending())
+			return;
+
 		SharedPreferences settings = context.getSharedPreferences(
 				Config.PREFS_NAME, Context.MODE_PRIVATE);
 
@@ -67,34 +88,16 @@ public class JSONSender {
 			if (statsSet == null)
 				continue;
 
-			int size = 0;
+			JSONSender jsonSenders[] = new JSONSender[statsSet.size()];
+			int i = 0;
 			// Get all data sets and send them
-			for (String name : statsSet) {
-				size++;
-				JSONSender jsonSender = new JSONSender(context, name, category);
-				if (jsonSender.getJSONObject() == null || jsonSender.send()) {
-					jsonSender.clear();
-					statsSet.remove(name);
-					size--;
-				}
-			}
+			for (String name : statsSet)
+				jsonSenders[i++] = new JSONSender(context, name, category);
 
-			// update or remove sets of data that have to be sent next time.
-			Editor settingsEditor = settings.edit();
-			if (size > 0) {
-				settingsEditor.putStringSet(key, new HashSet<String>(statsSet));
-			} else
-				settingsEditor.remove(key);
-			settingsEditor.apply();
+			JSONSenderTask jsonSenderTask = new JSONSenderTask(settings,
+					category);
+			jsonSenderTask.execute(jsonSenders);
 		}
-	}
-
-	public JSONObject getJSONObject() {
-		return jsonObject;
-	}
-
-	public StatsCategories getCategory() {
-		return category;
 	}
 
 	private static HttpClient getHttpClient() {
@@ -145,5 +148,17 @@ public class JSONSender {
 	public void clear() {
 		if (prefs != null)
 			prefs.edit().clear().apply();
+	}
+
+	public JSONObject getJSONObject() {
+		return jsonObject;
+	}
+
+	public StatsCategories getCategory() {
+		return category;
+	}
+
+	public String getName() {
+		return name;
 	}
 }
