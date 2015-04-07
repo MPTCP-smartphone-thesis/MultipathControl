@@ -92,4 +92,14 @@
         android:layout_marginTop="20dp"
         android:text="@string/button_tcp_cc" />
 
+    <Button
+        android:id="@+id/button_send_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button_tcp_cc"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="@string/app_name"
+        android:visibility="visible" />
+
 </RelativeLayout>
