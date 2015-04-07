@@ -18,7 +18,7 @@ public class SaveDataApp extends SaveDataAbstract {
 	public static final String PREFS_TCPCC        = "TCPCCAlgo";
 
 	public SaveDataApp(Context context) {
-		super(context, StatsCategories.APP);
+		super(context, StatsCategories.STARTUP);
 
 		setVersion(context);
 		setPref();

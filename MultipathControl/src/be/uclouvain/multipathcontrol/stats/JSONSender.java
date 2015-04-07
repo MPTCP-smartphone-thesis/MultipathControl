@@ -3,6 +3,7 @@ package be.uclouvain.multipathcontrol.stats;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -123,7 +124,8 @@ public class JSONSender {
 	public boolean send() {
 		HttpClient client = getHttpClient();
 
-		HttpPost httpPost = new HttpPost(baseUri + "/" + category);
+		HttpPost httpPost = new HttpPost(baseUri + "/"
+				+ category.name().toLowerCase(Locale.ENGLISH));
 		try {
 			httpPost.setEntity(new StringEntity(jsonObject.toString()));
 			httpPost.setHeader("Accept", "application/json");
