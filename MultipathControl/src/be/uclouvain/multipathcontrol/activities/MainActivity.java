@@ -42,7 +42,7 @@ public class MainActivity extends Activity {
 		ipv6Switch = (Switch) findViewById(R.id.switch_ipv6);
 		tcpCCButton = (Button) findViewById(R.id.button_tcp_cc);
 
-		mpctrl = Manager.create(this);
+		mpctrl = Manager.create(getApplicationContext());
 		if (mpctrl == null) {
 			Toast.makeText(this, "It seems this is not a rooted device",
 					Toast.LENGTH_LONG).show();
@@ -67,8 +67,10 @@ public class MainActivity extends Activity {
 		testButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Log.d(Manager.TAG, "New data app: "
-						+ new SaveDataApp(MainActivity.this).getTimestamp());
+				Log.d(Manager.TAG,
+						"New data app: "
+								+ new SaveDataApp(getApplicationContext())
+										.getTimestamp());
 				JSONSender.sendAll(getApplicationContext());
 			}
 		});
@@ -87,7 +89,7 @@ public class MainActivity extends Activity {
 
 	protected void onDestroy() {
 		super.onDestroy();
-		Manager.destroy(this);
+		Manager.destroy(getApplicationContext());
 	}
 
 	private void setChecked() {

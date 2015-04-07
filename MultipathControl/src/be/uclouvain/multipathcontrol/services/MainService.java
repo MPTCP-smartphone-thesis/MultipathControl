@@ -1,12 +1,12 @@
 package be.uclouvain.multipathcontrol.services;
 
-import be.uclouvain.multipathcontrol.MPCtrl;
-import be.uclouvain.multipathcontrol.global.Manager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
+import be.uclouvain.multipathcontrol.MPCtrl;
+import be.uclouvain.multipathcontrol.global.Manager;
 
 public class MainService extends Service {
 
@@ -19,7 +19,7 @@ public class MainService extends Service {
 
 	public void onCreate() {
 		super.onCreate();
-		mpctrl = Manager.create(this);
+		mpctrl = Manager.create(getApplicationContext());
 		Log.i(Manager.TAG, "Create service");
 		if (mpctrl == null) {
 			Toast.makeText(this,
@@ -33,7 +33,7 @@ public class MainService extends Service {
 	public void onDestroy() {
 		super.onDestroy();
 		if (mpctrl != null) {
-			Manager.destroy(this);
+			Manager.destroy(getApplicationContext());
 			Log.i(Manager.TAG, "Destroy service");
 		}
 	}
