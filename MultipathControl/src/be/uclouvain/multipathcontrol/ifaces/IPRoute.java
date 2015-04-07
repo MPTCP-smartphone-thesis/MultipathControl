@@ -8,12 +8,12 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
 
+import android.util.Log;
 import be.uclouvain.multipathcontrol.global.Config;
 import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.system.Cmd;
 import be.uclouvain.multipathcontrol.system.IPRouteUtils;
-
-import android.util.Log;
+import be.uclouvain.multipathcontrol.system.Sysctl;
 
 public class IPRoute {
 
@@ -87,6 +87,8 @@ public class IPRoute {
 				}
 			} catch (Exception e) {
 			}
+			if (!Config.ipv6)
+				Sysctl.setIPv6(false, iface.getName());
 		}
 
 	}

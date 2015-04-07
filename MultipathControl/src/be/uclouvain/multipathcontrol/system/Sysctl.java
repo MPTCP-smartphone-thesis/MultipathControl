@@ -65,7 +65,12 @@ public class Sysctl {
 		return getSysctl("net.ipv6.conf.all.disable_ipv6").equals("0");
 	}
 
+	public static boolean setIPv6(boolean ipv6, String iface) {
+		return setSysctl("net.ipv6.conf." + iface + ".disable_ipv6", ipv6 ? "0"
+				: "1");
+	}
+
 	public static boolean setIPv6(boolean ipv6) {
-		return setSysctl("net.ipv6.conf.all.disable_ipv6", ipv6 ? "0" : "1");
+		return setIPv6(ipv6, "all");
 	}
 }
