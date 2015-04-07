@@ -9,21 +9,18 @@ import java.util.Set;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import be.uclouvain.multipathcontrol.global.Config;
 import be.uclouvain.multipathcontrol.global.ConfigServer;
+import be.uclouvain.multipathcontrol.global.Manager;
 
 public class JSONSender {
 
@@ -35,7 +32,6 @@ public class JSONSender {
 
 	private static boolean isSending = false;
 
-	private static HttpClient httpClient = null;
 	private static String baseUri = "http://" + ConfigServer.hostname + ":"
 			+ ConfigServer.port;
 
@@ -104,41 +100,24 @@ public class JSONSender {
 		}
 	}
 
-	private static HttpClient getHttpClient() {
-		if (httpClient == null) {
-			DefaultHttpClient defaultHttpClient = new DefaultHttpClient();
-			if (ConfigServer.username != null
-					&& !ConfigServer.username.isEmpty()) {
-				Credentials creds = new UsernamePasswordCredentials(
-						ConfigServer.username, ConfigServer.password);
-				AuthScope scope = new AuthScope(ConfigServer.hostname,
-						ConfigServer.port);
-				CredentialsProvider credProvider = defaultHttpClient
-						.getCredentialsProvider();
-				credProvider.setCredentials(scope, creds);
-			}
-			httpClient = defaultHttpClient;
-		}
-		return httpClient;
-	}
-
 	/**
 	 * Send a POST request to the server (using ConfigServer class) with the
 	 * JSON string from jsonObject
 	 *
 	 * @return true if the server return status code 200
 	 */
-	public boolean send() {
-		HttpClient client = getHttpClient();
-
+	public boolean send(HttpClient httpClient) {
 		HttpPost httpPost = new HttpPost(baseUri + "/"
 				+ category.name().toLowerCase(Locale.ENGLISH));
 		try {
 			httpPost.setEntity(new StringEntity(jsonObject.toString()));
 			httpPost.setHeader("Accept", "application/json");
 			httpPost.setHeader("Content-type", "application/json");
-			HttpResponse response = client.execute(httpPost);
-			return response.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
+			HttpResponse response = httpClient.execute(httpPost);
+			int rc = response.getStatusLine().getStatusCode();
+			Log.d(Manager.TAG, "Get answer: " + rc);
+			response.getEntity().consumeContent();
+			return rc == HttpStatus.SC_OK;
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		} catch (ClientProtocolException e) {
