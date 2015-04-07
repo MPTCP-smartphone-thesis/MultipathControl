@@ -2,6 +2,7 @@ package be.uclouvain.multipathcontrol.global;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import be.uclouvain.multipathcontrol.stats.SaveDataApp;
 import be.uclouvain.multipathcontrol.system.Sysctl;
 
 public class Config {
@@ -48,6 +49,8 @@ public class Config {
 	}
 
 	public static void saveStatus(Context context) {
+		new SaveDataApp(context);
+
 		SharedPreferences settings = context.getSharedPreferences(PREFS_NAME,
 				Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = settings.edit();

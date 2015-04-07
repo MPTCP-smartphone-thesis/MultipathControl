@@ -1,11 +1,5 @@
 package be.uclouvain.multipathcontrol;
 
-import be.uclouvain.multipathcontrol.global.Config;
-import be.uclouvain.multipathcontrol.global.Manager;
-import be.uclouvain.multipathcontrol.ifaces.IPRoute;
-import be.uclouvain.multipathcontrol.ifaces.MobileDataMgr;
-import be.uclouvain.multipathcontrol.system.IPRouteUtils;
-import be.uclouvain.multipathcontrol.ui.Notifications;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +8,13 @@ import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.util.Log;
+import be.uclouvain.multipathcontrol.global.Config;
+import be.uclouvain.multipathcontrol.global.Manager;
+import be.uclouvain.multipathcontrol.ifaces.IPRoute;
+import be.uclouvain.multipathcontrol.ifaces.MobileDataMgr;
+import be.uclouvain.multipathcontrol.stats.SaveDataApp;
+import be.uclouvain.multipathcontrol.system.IPRouteUtils;
+import be.uclouvain.multipathcontrol.ui.Notifications;
 
 public class MPCtrl {
 
@@ -56,6 +57,7 @@ public class MPCtrl {
 
 		if (Config.mEnabled)
 			notif.showNotification();
+		new SaveDataApp(context);
 	}
 
 	public void destroy() {
@@ -69,8 +71,6 @@ public class MPCtrl {
 		handler.getLooper().quit();
 
 		notif.hideNotification();
-
-		Config.saveStatus(context);
 	}
 
 	public boolean setStatus(boolean isChecked) {
