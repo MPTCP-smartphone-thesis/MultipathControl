@@ -14,7 +14,7 @@ public class SaveDataApp extends SaveDataAbstract {
 	public static final String PREFS_DEFAULT_DATA = "defRouteCell";
 	public static final String PREFS_DATA_BACKUP  = "cellBackup";
 	public static final String PREFS_SAVE_BATTERY = "saveBattery";
-	public static final String PREFS_IPV6 = "ipv6";
+	public static final String PREFS_IPV6         = "ipv6";
 	public static final String PREFS_TCPCC        = "TCPCCAlgo";
 
 	public SaveDataApp(Context context) {
