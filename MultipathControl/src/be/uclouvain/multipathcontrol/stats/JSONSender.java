@@ -1,5 +1,6 @@
 package be.uclouvain.multipathcontrol.stats;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Locale;
@@ -30,6 +31,7 @@ public class JSONSender {
 	private SharedPreferences prefs;
 	private StatsCategories category;
 	private String name;
+	private String xmlFilePath;
 
 	private static boolean isSending = false;
 
@@ -41,6 +43,8 @@ public class JSONSender {
 		this.category = category;
 		this.name = name;
 		this.prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE);
+		this.xmlFilePath = context.getFilesDir().getParent() + File.separator
+				+ "shared_prefs" + File.separator + name + ".xml";
 
 		Map<String, ?> map = prefs.getAll();
 		if (map == null || !map.containsKey(SaveDataAbstract.PREFS_TIMESTAMP))
@@ -146,8 +150,10 @@ public class JSONSender {
 	}
 
 	public void clear() {
-		if (prefs != null)
-			prefs.edit().clear().apply();
+		if (prefs != null) {
+			prefs.edit().clear().commit();
+			new File(xmlFilePath).delete(); // not needed to keep empty xml file
+		}
 	}
 
 	public JSONObject getJSONObject() {
