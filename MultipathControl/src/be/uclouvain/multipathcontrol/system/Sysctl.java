@@ -66,6 +66,15 @@ public class Sysctl {
 	}
 
 	public static boolean setIPv6(boolean ipv6, String iface) {
+		String rules = ipv6 ? "ACCEPT" : "DROP";
+		try {
+			Cmd.runAsRoot(new String[] {
+					"ip6tables -P INPUT " + rules,
+					"ip6tables -P OUPUT " + rules,
+					"ip6tables -P FORWARD " + rules });
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return setSysctl("net.ipv6.conf." + iface + ".disable_ipv6", ipv6 ? "0"
 				: "1");
 	}
