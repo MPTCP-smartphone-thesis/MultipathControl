@@ -30,3 +30,4 @@ proguard/
 *.ipr
 *.iws
 .idea/
+google-play-services_lib

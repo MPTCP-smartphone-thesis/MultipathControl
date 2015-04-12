@@ -100,6 +100,6 @@ public abstract class SaveDataAbstract {
 	}
 
 	protected void save() {
-		editor.apply();
+		editor.commit();
 	}
 }

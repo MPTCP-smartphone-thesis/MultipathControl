@@ -14,6 +14,7 @@ import be.uclouvain.multipathcontrol.ifaces.IPRoute;
 import be.uclouvain.multipathcontrol.ifaces.MobileDataMgr;
 import be.uclouvain.multipathcontrol.stats.JSONSender;
 import be.uclouvain.multipathcontrol.stats.SaveDataApp;
+import be.uclouvain.multipathcontrol.stats.SaveDataHandover;
 import be.uclouvain.multipathcontrol.system.IPRouteUtils;
 import be.uclouvain.multipathcontrol.ui.Notifications;
 
@@ -34,7 +35,8 @@ public class MPCtrl {
 					.getSystemService(Context.POWER_SERVICE);
 			if (pm.isScreenOn())
 				mobileDataMgr.setMobileDataActive(Config.mEnabled);
-			iproute.monitorInterfaces();
+			if (iproute.monitorInterfaces())
+				new SaveDataHandover(context);
 		}
 	};
 
@@ -58,7 +60,10 @@ public class MPCtrl {
 
 		if (Config.mEnabled)
 			notif.showNotification();
+
+		// Log
 		new SaveDataApp(context);
+		new SaveDataHandover(context);
 	}
 
 	public void destroy() {
@@ -85,7 +90,8 @@ public class MPCtrl {
 
 		if (isChecked) {
 			notif.showNotification();
-			iproute.monitorInterfaces();
+			if (iproute.monitorInterfaces())
+				new SaveDataHandover(context);
 		} else {
 			notif.hideNotification();
 		}
