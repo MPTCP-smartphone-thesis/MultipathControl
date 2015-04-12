@@ -3,17 +3,11 @@ package be.uclouvain.multipathcontrol.stats;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
-import be.uclouvain.multipathcontrol.global.ConfigServer;
 import be.uclouvain.multipathcontrol.global.Manager;
 
 public class JSONSenderTask extends
@@ -27,21 +21,7 @@ public class JSONSenderTask extends
 		super();
 		this.settings = settings;
 		this.category = category;
-		this.httpClient = getHttpClient();
-	}
-
-	public static HttpClient getHttpClient() {
-		DefaultHttpClient defaultHttpClient = new DefaultHttpClient();
-		if (ConfigServer.username != null && !ConfigServer.username.isEmpty()) {
-			Credentials creds = new UsernamePasswordCredentials(
-					ConfigServer.username, ConfigServer.password);
-			AuthScope scope = new AuthScope(ConfigServer.hostname,
-					ConfigServer.port);
-			CredentialsProvider credProvider = defaultHttpClient
-					.getCredentialsProvider();
-			credProvider.setCredentials(scope, creds);
-		}
-		return defaultHttpClient;
+		this.httpClient = HttpUtils.getHttpClient();
 	}
 
 	@Override
@@ -50,8 +30,6 @@ public class JSONSenderTask extends
 		Collection<String> collection = new ArrayList<String>(
 				jsonSenders.length);
 		for (JSONSender jsonSender : jsonSenders) {
-			Log.d(Manager.TAG, "Try sending: " + jsonSender.getJSONObject());
-
 			// remove it also is we had problem when creating JSONSender object
 			if (jsonSender.getJSONObject() == null
 					|| jsonSender.send(httpClient)) {

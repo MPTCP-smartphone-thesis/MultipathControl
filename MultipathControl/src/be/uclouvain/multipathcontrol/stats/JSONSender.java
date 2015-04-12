@@ -2,14 +2,12 @@ package be.uclouvain.multipathcontrol.stats;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -19,7 +17,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 import be.uclouvain.multipathcontrol.global.Config;
-import be.uclouvain.multipathcontrol.global.ConfigServer;
 import be.uclouvain.multipathcontrol.global.Manager;
 
 public class JSONSender {
@@ -31,9 +28,6 @@ public class JSONSender {
 	private String xmlFilePath;
 
 	private static boolean isSending = false;
-
-	private static String baseUri = "http://" + ConfigServer.hostname + ":"
-			+ ConfigServer.port;
 
 	public JSONSender(Context context, String name, StatsCategories category) {
 		this.category = category;
@@ -107,10 +101,13 @@ public class JSONSender {
 	 * @return true if the server return status code 200
 	 */
 	public boolean send(HttpClient httpClient) {
-		HttpPost httpPost = new HttpPost(baseUri + "/"
+		if (jsonObject == null)
+			return false;
+		HttpPost httpPost = new HttpPost(HttpUtils.BASEURI + "/"
 				+ category.name().toLowerCase(Locale.ENGLISH));
+		String jsonString = jsonObject.toString();
 		try {
-			httpPost.setEntity(new StringEntity(jsonObject.toString()));
+			httpPost.setEntity(new StringEntity(jsonString));
 			httpPost.setHeader("Accept", "application/json");
 			httpPost.setHeader("Content-type", "application/json");
 			HttpResponse response = httpClient.execute(httpPost);
@@ -118,12 +115,10 @@ public class JSONSender {
 			Log.d(Manager.TAG, "Get answer: " + rc);
 			response.getEntity().consumeContent();
 			return rc == HttpStatus.SC_OK;
-		} catch (UnsupportedEncodingException e1) {
-			e1.printStackTrace();
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e(Manager.TAG,
+					"Error when sending [" + jsonString + "]: "
+							+ e.getMessage());
 		}
 		return false;
 	}
