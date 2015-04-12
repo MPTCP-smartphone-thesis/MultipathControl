@@ -93,7 +93,8 @@ public class IPRoute {
 
 	}
 
-	public void monitorInterfaces() {
+	public boolean monitorInterfaces() {
+		boolean update = false;
 		try {
 			for (NetworkInterface iface : Collections.list(NetworkInterface
 					.getNetworkInterfaces())) {
@@ -110,6 +111,7 @@ public class IPRoute {
 					Log.i(Manager.TAG, "New monitor " + name + " addrs: "
 							+ addrs);
 					mIntfState.put(name, addrs);
+					update = true;
 					continue;
 				}
 
@@ -117,15 +119,17 @@ public class IPRoute {
 					Log.i(Manager.TAG, "New addrs for " + name + " addrs: "
 							+ addrs);
 					setupRule(iface, true);
+					mIntfState.put(name, addrs);
+					update = true;
 				}
-
-				mIntfState.put(name, addrs);
 			}
 		} catch (SocketException e) {
 		}
 
 		// if WLan iface has been modified, default route will be wrong
-		if (Config.defaultRouteData)
-			IPRouteUtils.setDefaultRoute();
+		if (update && Config.defaultRouteData)
+				IPRouteUtils.setDefaultRoute();
+
+		return update;
 	}
 }
