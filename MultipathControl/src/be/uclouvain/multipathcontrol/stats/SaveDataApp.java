@@ -17,6 +17,8 @@ public class SaveDataApp extends SaveDataAbstract {
 	public static final String PREFS_IPV6         = "ipv6";
 	public static final String PREFS_TCPCC        = "TCPCCAlgo";
 
+	private static PackageInfo info = null;
+
 	public SaveDataApp(Context context) {
 		super(context, StatsCategories.STARTUP);
 
@@ -26,16 +28,24 @@ public class SaveDataApp extends SaveDataAbstract {
 		save();
 	}
 
-	private void setVersion(Context context) {
-		PackageInfo info;
-		try {
-			info = context.getPackageManager().getPackageInfo(
-					context.getPackageName(), 0);
-		} catch (NameNotFoundException e) {
-			// should not happen... our package
-			e.printStackTrace();
-			return;
+	private static synchronized PackageInfo getInfo(Context context) {
+		if (info == null) {
+			try {
+				info = context.getPackageManager().getPackageInfo(
+						context.getPackageName(), 0);
+			} catch (NameNotFoundException e) {
+				// should not happen... our package
+				e.printStackTrace();
+				return null;
+			}
 		}
+		return info;
+	}
+
+	private void setVersion(Context context) {
+		if (getInfo(context) == null)
+			return;
+
 		editor.putString(PREFS_VERSION_NAME, info.versionName);
 		editor.putInt(PREFS_VERSION_CODE, info.versionCode);
 		editor.putLong(PREFS_LAST_UPDATE, info.lastUpdateTime);
