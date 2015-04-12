@@ -6,9 +6,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import be.uclouvain.multipathcontrol.global.Manager;
-
 import android.util.Log;
+import be.uclouvain.multipathcontrol.global.Manager;
 
 public class Cmd {
 	private Cmd() {
@@ -83,5 +82,27 @@ public class Cmd {
 
 	public static List<String> getAllLines(String cmd) {
 		return getAllLines(cmd, false);
+	}
+
+	public static String getAllLinesString(String cmd, boolean root, char sep) {
+		StringBuffer sBuffer = new StringBuffer();
+		List<String> lines = getAllLines(cmd, root);
+		for (String line : lines) {
+			sBuffer.append(line);
+			sBuffer.append(sep);
+		}
+		return sBuffer.toString();
+	}
+
+	public static String getAllLinesString(String cmd, char sep) {
+		return getAllLinesString(cmd, false, sep);
+	}
+
+	public static String getAllLinesString(String cmd, boolean root) {
+		return getAllLinesString(cmd, root, '\n');
+	}
+
+	public static String getAllLinesString(String cmd) {
+		return getAllLinesString(cmd, false, '\n');
 	}
 }
