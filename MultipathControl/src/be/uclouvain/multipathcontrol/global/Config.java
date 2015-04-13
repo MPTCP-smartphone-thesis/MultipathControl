@@ -33,6 +33,7 @@ public class Config {
 	public static final String PREFS_DATA_BACKUP    = "dataBackup";
 	public static final String PREFS_SAVE_BATTERY   = "saveBattery";
 	public static final String PREFS_IPV6           = "ipv6";
+	public static final String PREFS_SAVE_POWER_GPS = "savePowerGPS";
 	public static final String PREFS_TCPCC          = "tcpcc";
 	public static final String PREFS_STATS_SET      = "statsSet";
 
@@ -41,6 +42,7 @@ public class Config {
 	public static boolean dataBackup;
 	public static boolean saveBattery;
 	public static boolean ipv6;
+	public static boolean savePowerGPS;
 	public static String tcpcc;
 
 	private Config() {
@@ -53,6 +55,7 @@ public class Config {
 		defaultRouteData = settings.getBoolean(PREFS_DEFAULT_DATA, false);
 		dataBackup = settings.getBoolean(PREFS_DATA_BACKUP, false);
 		saveBattery = settings.getBoolean(PREFS_SAVE_BATTERY, true);
+		savePowerGPS = settings.getBoolean(PREFS_SAVE_POWER_GPS, true);
 
 		// Dynamic
 		ipv6 = settings.getBoolean(PREFS_IPV6, false);
@@ -80,6 +83,7 @@ public class Config {
 		editor.putBoolean(PREFS_DATA_BACKUP, dataBackup);
 		editor.putBoolean(PREFS_SAVE_BATTERY, saveBattery);
 		editor.putBoolean(PREFS_IPV6, ipv6);
+		editor.putBoolean(PREFS_SAVE_POWER_GPS, savePowerGPS);
 		editor.putString(PREFS_TCPCC, tcpcc);
 		editor.apply();
 	}

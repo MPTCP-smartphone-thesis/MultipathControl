@@ -47,6 +47,7 @@ public class MainActivity extends Activity {
 	private Switch dataBackupSwitch;
 	private Switch saveBatterySwitch;
 	private Switch ipv6Switch;
+	private Switch savePowerGPSSwitch;
 	private Button tcpCCButton;
 
 	@Override
@@ -59,6 +60,7 @@ public class MainActivity extends Activity {
 		dataBackupSwitch = (Switch) findViewById(R.id.switch_data_backup);
 		saveBatterySwitch = (Switch) findViewById(R.id.switch_save_battery);
 		ipv6Switch = (Switch) findViewById(R.id.switch_ipv6);
+		savePowerGPSSwitch = (Switch) findViewById(R.id.switch_save_power_gps);
 		tcpCCButton = (Button) findViewById(R.id.button_tcp_cc);
 
 		mpctrl = Manager.create(getApplicationContext());
@@ -80,6 +82,8 @@ public class MainActivity extends Activity {
 		saveBatterySwitch
 				.setOnCheckedChangeListener(onCheckedChangeListernerSaveBattery);
 		ipv6Switch.setOnCheckedChangeListener(onCheckedChangeListernerIPv6);
+		savePowerGPSSwitch
+				.setOnCheckedChangeListener(onCheckedChangeListernerSavePowerGPS);
 		tcpCCButton.setOnClickListener(onClickListenerTcpCC);
 
 		Button testButton = (Button) findViewById(R.id.button_send_data);
@@ -108,6 +112,7 @@ public class MainActivity extends Activity {
 		dataBackupSwitch.setChecked(Config.dataBackup);
 		saveBatterySwitch.setChecked(Config.saveBattery);
 		ipv6Switch.setChecked(Config.ipv6);
+		savePowerGPSSwitch.setChecked(Config.savePowerGPS);
 		tcpCCButton.setText(getText(R.string.button_tcp_cc) + ": "
 				+ Config.tcpcc);
 	}
@@ -163,6 +168,14 @@ public class MainActivity extends Activity {
 				Toast.makeText(MainActivity.this,
 						"Not able to change IPv6 settings",
 						Toast.LENGTH_LONG).show();
+		}
+	};
+
+	private OnCheckedChangeListener onCheckedChangeListernerSavePowerGPS = new OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView,
+				boolean isChecked) {
+			mpctrl.setSavePowerGPS(isChecked);
 		}
 	};
 

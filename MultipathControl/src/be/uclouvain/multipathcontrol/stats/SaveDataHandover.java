@@ -46,6 +46,7 @@ import android.telephony.CellLocation;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
+import be.uclouvain.multipathcontrol.global.Config;
 import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.system.Cmd;
 import be.uclouvain.multipathcontrol.system.IPRouteUtils;
@@ -115,7 +116,7 @@ public class SaveDataHandover extends SaveDataAbstract {
 		if (phoneState == null)
 			phoneState = new PhoneState(telephonyManager);
 		if (locationState == null)
-			locationState = new LocationState(context);
+			locationState = new LocationState(context, Config.savePowerGPS);
 	}
 
 	public SaveDataHandover(Context context) {
@@ -138,6 +139,11 @@ public class SaveDataHandover extends SaveDataAbstract {
 		fromSettings(context);
 
 		save();
+	}
+
+	public static void savePowerGPS(boolean savePowerGPS) {
+		if (locationState != null)
+			locationState.setPriority(savePowerGPS);
 	}
 
 	// Src: https://github.com/caarmen/network-monitor/blob/master/networkmonitor/src/main/java/ca/rmen/android/networkmonitor/app/service/datasources/ActiveNetworkInfoDataSource.java

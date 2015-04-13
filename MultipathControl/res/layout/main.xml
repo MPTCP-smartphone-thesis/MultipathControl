@@ -83,11 +83,20 @@
         android:text="@string/switch_ipv6_desc"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
+    <Switch
+        android:id="@+id/switch_save_power_gps"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_data_backup"
+        android:layout_below="@+id/text_ipv6_desc"
+        android:layout_marginTop="10dp"
+        android:text="@string/switch_save_power_gps" />
+
     <Button
         android:id="@+id/button_tcp_cc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/text_ipv6_desc"
+        android:layout_below="@+id/switch_save_power_gps"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
         android:text="@string/button_tcp_cc" />

@@ -142,6 +142,15 @@ public class MPCtrl {
 			return false;
 		Config.saveBattery = isChecked;
 		Config.saveStatus(context);
+		return true; // nothing to do here: we need to restart app
+	}
+
+	public boolean setSavePowerGPS(boolean isChecked) {
+		if (isChecked == Config.savePowerGPS)
+			return false;
+		Config.savePowerGPS = isChecked;
+		Config.saveStatus(context);
+		SaveDataHandover.savePowerGPS(isChecked);
 		return true;
 	}
 

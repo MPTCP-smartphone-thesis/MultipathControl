@@ -34,6 +34,7 @@ public class SaveDataApp extends SaveDataAbstract {
 	public static final String PREFS_DEFAULT_DATA = "defRouteCell";
 	public static final String PREFS_DATA_BACKUP  = "cellBackup";
 	public static final String PREFS_SAVE_BATTERY = "saveBattery";
+	public static final String PREFS_SAVE_POW_GPS = "savePowerGPS";
 	public static final String PREFS_IPV6         = "ipv6";
 	public static final String PREFS_TCPCC        = "TCPCCAlgo";
 
@@ -77,6 +78,7 @@ public class SaveDataApp extends SaveDataAbstract {
 		editor.putBoolean(PREFS_DATA_BACKUP, Config.dataBackup);
 		editor.putBoolean(PREFS_SAVE_BATTERY, Config.saveBattery);
 		editor.putBoolean(PREFS_IPV6, Config.ipv6);
+		editor.putBoolean(PREFS_SAVE_POW_GPS, Config.savePowerGPS);
 		editor.putString(PREFS_TCPCC, Config.tcpcc);
 	}
 
