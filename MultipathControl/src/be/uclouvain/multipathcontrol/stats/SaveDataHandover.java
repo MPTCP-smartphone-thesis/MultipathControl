@@ -56,6 +56,7 @@ public class SaveDataHandover extends SaveDataAbstract {
 	public static final String PREFS_CELL_BER          = "cellBer";
 	public static final String PREFS_CELL_SIGNAL_4     = "cellSignal4";
 	public static final String PREFS_CELL_SIGNAL_DBM   = "cellSignaldBm";
+	public static final String PREFS_DATA_ACTIVITY     = "dataActivity";
 	public static final String PREFS_DATA_STATE        = "dataState";
 	public static final String PREFS_CELL_TYPE         = "cellType";
 	public static final String PREFS_EXT_IP            = "extIp";
@@ -232,6 +233,7 @@ public class SaveDataHandover extends SaveDataAbstract {
 		editor.putString(PREFS_CELL_TYPE, phoneState.getNetworkType());
 		editor.putString(PREFS_SIM_STATE, phoneState.getSimState());
 		editor.putString(PREFS_DATA_STATE, phoneState.getDataState());
+		editor.putString(PREFS_DATA_ACTIVITY, phoneState.getDataActivity());
 
 		editor.putInt(PREFS_CELL_SIGNAL_4, phoneState.getLastSignalStrength());
 		int dBm = phoneState.getLastSignalStrengthDbm();

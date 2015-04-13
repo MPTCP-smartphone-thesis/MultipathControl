@@ -139,6 +139,23 @@ public class PhoneState {
 		return "Error";
 	}
 
+	public String getDataActivity() {
+		int dataActivity = telephonyManager.getDataActivity();
+		switch (dataActivity) {
+		case TelephonyManager.DATA_ACTIVITY_DORMANT:
+			return "Dormant";
+		case TelephonyManager.DATA_ACTIVITY_IN:
+			return "In";
+		case TelephonyManager.DATA_ACTIVITY_INOUT:
+			return "InOut";
+		case TelephonyManager.DATA_ACTIVITY_NONE:
+			return "None";
+		case TelephonyManager.DATA_ACTIVITY_OUT:
+			return "Out";
+		}
+		return "Error";
+	}
+
 	/**
 	 * @return a value between 0 {@link #SIGNAL_STRENGTH_NONE_OR_UNKNOWN} and 4
 	 *         {@link #SIGNAL_STRENGTH_GREAT}.
