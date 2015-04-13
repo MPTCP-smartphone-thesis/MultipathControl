@@ -39,9 +39,11 @@ public class LocationState {
 
 	private final GoogleApiClient googleApiClient;
 	private final Context context;
+	private int priority;
 
-	public LocationState(Context context) {
+	public LocationState(Context context, int priority) {
 		this.context = context;
+		this.priority = priority;
 		googleApiClient = new GoogleApiClient.Builder(context)
 				.addConnectionCallbacks(googleApiLocationConnectionCallbacks)
 				.addOnConnectionFailedListener(
@@ -50,11 +52,69 @@ public class LocationState {
 		googleApiClient.connect();
 	}
 
+	public LocationState(Context context) {
+		this(context, LocationRequest.PRIORITY_LOW_POWER);
+	}
+
+	public LocationState(Context context, boolean savePowerGPS) {
+		this(context, getPriority(savePowerGPS));
+	}
+
 	public Location getLastLocation() {
 		if (isGPSAvailable() && googleApiClient.isConnected())
 			return LocationServices.FusedLocationApi
 					.getLastLocation(googleApiClient);
 		return null;
+	}
+
+	public static int getPriority(boolean savePowerGPS) {
+		return savePowerGPS ? LocationRequest.PRIORITY_LOW_POWER
+				: LocationRequest.PRIORITY_HIGH_ACCURACY;
+	}
+
+	public int getPriority() {
+		return priority;
+	}
+
+	/**
+	 * @param priority see {@link LocationRequest}
+	 */
+	public void setPriority(int priority) {
+		if (this.priority == priority)
+			return;
+		this.priority = priority;
+
+		// no need to change priority when not assigned
+		if (!googleApiClient.isConnected())
+			return;
+
+		registerLocationListener();
+	}
+
+	public void setPriority(boolean savePowerGPS) {
+		setPriority(getPriority(savePowerGPS));
+	}
+
+	/**
+	 * RequestLocationUpdates depending of the priority.
+	 *
+	 * @pre googleApiClient has to be connected
+	 */
+	private synchronized void registerLocationListener() {
+		if (!isGPSAvailable())
+			return;
+
+		// seems we can remove it even if it not exists
+		LocationServices.FusedLocationApi.removeLocationUpdates(
+				googleApiClient, locationListener);
+
+		LocationRequest request = new LocationRequest();
+		request.setPriority(priority);
+		if (priority == LocationRequest.PRIORITY_HIGH_ACCURACY)
+			request.setFastestInterval(5000);
+
+		LocationServices.FusedLocationApi.requestLocationUpdates(
+				googleApiClient, request, locationListener);
 	}
 
 	private boolean isGPSAvailable() {
@@ -79,13 +139,7 @@ public class LocationState {
 		@Override
 		public void onConnected(Bundle arg0) {
 			Log.d(Manager.TAG, "GooglePlayService connected");
-			if (isGPSAvailable()) {
-				LocationRequest request = new LocationRequest();
-				// TODO: option to get better accuracy
-				request.setPriority(LocationRequest.PRIORITY_LOW_POWER);
-				LocationServices.FusedLocationApi.requestLocationUpdates(
-						googleApiClient, request, locationListener);
-			}
+			registerLocationListener();
 		}
 	};
 	private OnConnectionFailedListener googleApiLocationCConnectionFailedListener = new OnConnectionFailedListener() {
