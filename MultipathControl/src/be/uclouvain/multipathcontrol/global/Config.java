@@ -27,14 +27,14 @@ import be.uclouvain.multipathcontrol.system.Sysctl;
 
 public class Config {
 
-	public static final String PREFS_NAME = "MultipathControl";
-	public static final String PREFS_STATUS = "enableMultiInterfaces";
-	public static final String PREFS_DEFAULT_DATA = "defaultData";
-	public static final String PREFS_DATA_BACKUP = "dataBackup";
-	public static final String PREFS_SAVE_BATTERY = "saveBattery";
-	public static final String PREFS_IPV6 = "ipv6";
-	public static final String PREFS_TCPCC = "tcpcc";
-	public static final String PREFS_STATS_SET = "statsSet";
+	public static final String PREFS_NAME           = "MultipathControl";
+	public static final String PREFS_STATUS         = "enableMultiInterfaces";
+	public static final String PREFS_DEFAULT_DATA   = "defaultData";
+	public static final String PREFS_DATA_BACKUP    = "dataBackup";
+	public static final String PREFS_SAVE_BATTERY   = "saveBattery";
+	public static final String PREFS_IPV6           = "ipv6";
+	public static final String PREFS_TCPCC          = "tcpcc";
+	public static final String PREFS_STATS_SET      = "statsSet";
 
 	public static boolean mEnabled;
 	public static boolean defaultRouteData;
@@ -54,6 +54,7 @@ public class Config {
 		dataBackup = settings.getBoolean(PREFS_DATA_BACKUP, false);
 		saveBattery = settings.getBoolean(PREFS_SAVE_BATTERY, true);
 
+		// Dynamic
 		ipv6 = settings.getBoolean(PREFS_IPV6, false);
 		if (ipv6 != Sysctl.getIPv6())
 			Sysctl.setIPv6(ipv6);
@@ -63,7 +64,7 @@ public class Config {
 			Sysctl.setCC(tcpcc);
 	}
 
-	public static void getDynamicConfig() {
+	public static void updateDynamicConfig() {
 		ipv6 = Sysctl.getIPv6();
 		tcpcc = Sysctl.getCC();
 	}
