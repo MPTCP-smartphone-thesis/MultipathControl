@@ -50,6 +50,9 @@ public class JSONSenderTask extends
 		Collection<String> collection = new ArrayList<String>(
 				jsonSenders.length);
 		for (JSONSender jsonSender : jsonSenders) {
+			Log.d(Manager.TAG, "Try sending: " + jsonSender.getName() + " - "
+					+ jsonSender.getCategory());
+
 			// remove it also is we had problem when creating JSONSender object
 			if (jsonSender.getJSONObject() == null
 					|| jsonSender.send(httpClient)) {
