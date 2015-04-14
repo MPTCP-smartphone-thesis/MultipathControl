@@ -20,6 +20,9 @@
 
 package be.uclouvain.multipathcontrol;
 
+import java.net.NetworkInterface;
+import java.util.List;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,6 +38,7 @@ import be.uclouvain.multipathcontrol.ifaces.MobileDataMgr;
 import be.uclouvain.multipathcontrol.stats.JSONSender;
 import be.uclouvain.multipathcontrol.stats.SaveDataApp;
 import be.uclouvain.multipathcontrol.stats.SaveDataHandover;
+import be.uclouvain.multipathcontrol.system.Cmd;
 import be.uclouvain.multipathcontrol.system.IPRouteUtils;
 import be.uclouvain.multipathcontrol.ui.Notifications;
 
@@ -62,6 +66,10 @@ public class MPCtrl {
 
 	public MPCtrl(Context context) {
 		this.context = context;
+
+		// to be sure that all connections will be managed by the proxy
+		restartIFaces();
+
 		Config.getDefaultConfig(context);
 		notif = new Notifications(context);
 		mobileDataMgr = new MobileDataMgr(context);
@@ -152,6 +160,33 @@ public class MPCtrl {
 		Config.saveStatus(context);
 		SaveDataHandover.savePowerGPS(isChecked);
 		return true;
+	}
+
+	/**
+	 * Restart all active interfaces in order to be sure that all connections
+	 * will be managed by the Proxy and use the right MPTCP options
+	 */
+	private void restartIFaces() {
+		List<NetworkInterface> activeIfaces = IPRouteUtils.getActiveIfaces();
+		if (activeIfaces == null || activeIfaces.isEmpty())
+			return;
+
+		for (NetworkInterface iface : activeIfaces) {
+			String ifaceName = iface.getName();
+			Log.d(Manager.TAG, "restart iface: " + ifaceName);
+			try {
+				Cmd.runAsRoot("ip link set " + ifaceName + " down").wait();
+			} catch (Exception e) {
+				Log.w(Manager.TAG, "Error when disabling " + ifaceName + ": "
+						+ e.getMessage());
+			}
+			try {
+				Cmd.runAsRoot("ip link set " + ifaceName + " up");
+			} catch (Exception e) {
+				Log.w(Manager.TAG, "Error when disabling " + ifaceName + ": "
+						+ e.getMessage());
+			}
+		}
 	}
 
 	// Will not be executed in deep sleep, nice, no need to use both connections
