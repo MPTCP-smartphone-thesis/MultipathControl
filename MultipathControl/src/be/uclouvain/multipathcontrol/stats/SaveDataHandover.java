@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -264,13 +263,10 @@ public class SaveDataHandover extends SaveDataAbstract {
 
 	// Src: https://github.com/caarmen/network-monitor/blob/master/networkmonitor/src/main/java/ca/rmen/android/networkmonitor/app/service/datasources/NetworkInterfaceDataSource.java
 	private void fromNetworkInterface() {
-		Enumeration<NetworkInterface> networkInterfaces;
-		try {
-			networkInterfaces = NetworkInterface.getNetworkInterfaces();
-		} catch (SocketException e) {
-			Log.w(Manager.TAG, "Not able to get Network Interfaces");
+
+		List<NetworkInterface> activeIfaces = IPRouteUtils.getActiveIfaces();
+		if (activeIfaces == null || activeIfaces.isEmpty())
 			return;
-		}
 
 		StringBuffer ifacesNames = new StringBuffer();
 		StringBuffer ipv4WiFi = new StringBuffer();
@@ -278,25 +274,21 @@ public class SaveDataHandover extends SaveDataAbstract {
 		StringBuffer ipv6WiFi = new StringBuffer();
 		StringBuffer ipv6RMNet = new StringBuffer();
 
-		while (networkInterfaces.hasMoreElements()) {
-			NetworkInterface networkInterface = networkInterfaces.nextElement();
-			if (isValidNetworkInterface(networkInterface)) {
-				Enumeration<InetAddress> inetAddresses = networkInterface
-						.getInetAddresses();
-				String ifaceName = networkInterface.getName();
-				if (inetAddresses.hasMoreElements())
-					ifacesNames.append(";" + ifaceName);
-				boolean isMobile = IPRouteUtils.isMobile(ifaceName);
-				while (inetAddresses.hasMoreElements()) {
-					InetAddress inetAddress = inetAddresses.nextElement();
-					StringBuffer ip = null;
-					if (inetAddress instanceof Inet4Address)
-						ip = isMobile ? ipv4RMNet : ipv4WiFi;
-					else if (!inetAddress.isLinkLocalAddress())
-						ip = isMobile ? ipv6RMNet : ipv6WiFi;
-					if (ip != null)
-						ip.append(";" + inetAddress.getHostAddress());
-				}
+		for (NetworkInterface networkInterface : activeIfaces) {
+			String ifaceName = networkInterface.getName();
+			ifacesNames.append(";" + ifaceName);
+			boolean isMobile = IPRouteUtils.isMobile(ifaceName);
+			Enumeration<InetAddress> inetAddresses = networkInterface
+					.getInetAddresses();
+			while (inetAddresses.hasMoreElements()) {
+				InetAddress inetAddress = inetAddresses.nextElement();
+				StringBuffer ip = null;
+				if (inetAddress instanceof Inet4Address)
+					ip = isMobile ? ipv4RMNet : ipv4WiFi;
+				else if (!inetAddress.isLinkLocalAddress())
+					ip = isMobile ? ipv6RMNet : ipv6WiFi;
+				if (ip != null)
+					ip.append(";" + inetAddress.getHostAddress());
 			}
 		}
 
@@ -310,14 +302,6 @@ public class SaveDataHandover extends SaveDataAbstract {
 			editor.putString(PREFS_IP_WIFI_V6, ipv6WiFi.substring(1));
 		if (ipv6RMNet.length() > 0)
 			editor.putString(PREFS_IP_RMNET_V6, ipv6RMNet.substring(1));
-	}
-
-	private boolean isValidNetworkInterface(NetworkInterface networkInterface) {
-		try {
-			return networkInterface.isUp() && !networkInterface.isLoopback();
-		} catch (SocketException e) {
-		}
-		return false;
 	}
 
 	private void fromSystem() {

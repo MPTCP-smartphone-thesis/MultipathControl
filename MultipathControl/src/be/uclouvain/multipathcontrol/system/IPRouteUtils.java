@@ -23,14 +23,19 @@ package be.uclouvain.multipathcontrol.system;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.util.Log;
 import be.uclouvain.multipathcontrol.global.Config;
+import be.uclouvain.multipathcontrol.global.Manager;
 
 public class IPRouteUtils {
 
@@ -203,5 +208,36 @@ public class IPRouteUtils {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * @return a list of all active interfaces (up, not loopback, with IP)
+	 */
+	public static List<NetworkInterface> getActiveIfaces() {
+		Enumeration<NetworkInterface> networkInterfaces;
+		try {
+			networkInterfaces = NetworkInterface.getNetworkInterfaces();
+		} catch (SocketException e) {
+			Log.w(Manager.TAG, "Not able to get Network Interfaces");
+			return null;
+		}
+
+		List<NetworkInterface> activeIfaces = new LinkedList<>();
+		while (networkInterfaces.hasMoreElements()) {
+			NetworkInterface networkInterface = networkInterfaces.nextElement();
+			// all active interface, not loopback
+			try {
+				if (networkInterface.isUp() && !networkInterface.isLoopback()) {
+					Enumeration<InetAddress> inetAddresses = networkInterface
+							.getInetAddresses();
+					// only if it has address
+					if (inetAddresses.hasMoreElements())
+						activeIfaces.add(networkInterface);
+				}
+			} catch (SocketException e) {
+			}
+		}
+
+		return activeIfaces;
 	}
 }
