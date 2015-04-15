@@ -162,7 +162,9 @@ public class SaveDataHandover extends SaveDataAbstract {
 		editor.putBoolean(PREFS_NETWORK_CONNECTED, activeNetworkInfo.isConnected());
 		editor.putBoolean(PREFS_NETWORK_FAILOVER, activeNetworkInfo.isFailover());
 		editor.putString(PREFS_NETWORK_DSTATE, activeNetworkInfo.getDetailedState().toString());
-		editor.putString(PREFS_NETWORK_REASON, activeNetworkInfo.getReason());
+		String reason = activeNetworkInfo.getReason();
+		if (reason != null && !reason.isEmpty())
+			editor.putString(PREFS_NETWORK_REASON, reason);
 		editor.putString(PREFS_NETWORK_EXTRAS, activeNetworkInfo.getExtraInfo());
 	}
 
