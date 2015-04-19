@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">HIPRI Keeper</string>
+
+    <string name="notification_title">HIPRI Enabled</string>
+    <string name="notification_text">Click to change options</string>
+
+    <string name="switch_enable">Enable</string>
+    <string name="switch_save_battery">Save battery by allowing deep sleep mode</string>
+    <string name="switch_save_battery_desc">The cellular connection will not be maintained on deep sleep if a WiFi connection is available</string>
+</resources>

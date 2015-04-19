@@ -3,6 +3,7 @@
 *.ap_
 .metadata
 .gradle
+build
 
 # files for the dex VM
 *.dex
@@ -28,6 +29,8 @@ proguard/
 # Intellij project files
 *.iml
 *.ipr
-*.iws
-.idea/
+*.iws/
+.idea/workspace.xml
+.idea/libraries
 google-play-services_lib
+.idea/dictionaries/*.xml
