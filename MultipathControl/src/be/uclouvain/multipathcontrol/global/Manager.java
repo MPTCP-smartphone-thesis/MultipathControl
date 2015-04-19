@@ -34,6 +34,9 @@ public class Manager {
 	private static int instances = 0;
 	private static Context usedContext;
 
+	private Manager() {
+	}
+
 	private static boolean checkRoot() {
 		return new File("/system/xbin/su").canExecute();
 	}
