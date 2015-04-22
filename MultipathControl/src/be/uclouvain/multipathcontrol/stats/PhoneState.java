@@ -46,7 +46,15 @@ public class PhoneState {
 	private int lastSignalStrengthDbm;
 	private int lastBer;
 
-	public PhoneState(TelephonyManager telephonyManager) {
+	private static PhoneState instance = null;
+
+	public static PhoneState getInstance(TelephonyManager telephonyManager) {
+		if (instance == null)
+			instance = new PhoneState(telephonyManager);
+		return instance;
+	}
+
+	private PhoneState(TelephonyManager telephonyManager) {
 		this.telephonyManager = telephonyManager;
 		telephonyManager.listen(phoneStateListener,
 				PhoneStateListener.LISTEN_SIGNAL_STRENGTHS

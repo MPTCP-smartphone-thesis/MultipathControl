@@ -113,9 +113,10 @@ public class SaveDataHandover extends SaveDataAbstract {
 					.getSystemService(Context.WIFI_SERVICE);
 
 		if (phoneState == null)
-			phoneState = new PhoneState(telephonyManager);
+			phoneState = PhoneState.getInstance(telephonyManager);
 		if (locationState == null)
-			locationState = new LocationState(context, Config.savePowerGPS);
+			locationState = LocationState.getInstance(context,
+					Config.savePowerGPS);
 	}
 
 	public SaveDataHandover(Context context) {

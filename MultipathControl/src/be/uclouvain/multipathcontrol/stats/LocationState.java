@@ -41,7 +41,24 @@ public class LocationState {
 	private final Context context;
 	private int priority;
 
-	public LocationState(Context context, int priority) {
+	private static LocationState instance = null;
+
+	public static LocationState getInstance(Context context, int priority) {
+		if (instance == null)
+			instance = new LocationState(context, priority);
+		return instance;
+	}
+
+	public static LocationState getInstance(Context context) {
+		return getInstance(context, LocationRequest.PRIORITY_LOW_POWER);
+	}
+
+	public static LocationState getInstance(Context context,
+			boolean savePowerGPS) {
+		return getInstance(context, getPriority(savePowerGPS));
+	}
+
+	private LocationState(Context context, int priority) {
 		this.context = context;
 		this.priority = priority;
 		googleApiClient = new GoogleApiClient.Builder(context)
@@ -50,14 +67,6 @@ public class LocationState {
 						googleApiLocationCConnectionFailedListener)
 				.addApi(LocationServices.API).build();
 		googleApiClient.connect();
-	}
-
-	public LocationState(Context context) {
-		this(context, LocationRequest.PRIORITY_LOW_POWER);
-	}
-
-	public LocationState(Context context, boolean savePowerGPS) {
-		this(context, getPriority(savePowerGPS));
 	}
 
 	public Location getLastLocation() {
