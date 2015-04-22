@@ -110,8 +110,10 @@ public class LocationState {
 
 		LocationRequest request = new LocationRequest();
 		request.setPriority(priority);
+		Log.d(Manager.TAG, "New priority: " + priority);
+		// we need update
 		if (priority == LocationRequest.PRIORITY_HIGH_ACCURACY)
-			request.setFastestInterval(5000);
+			request.setInterval(1000).setFastestInterval(1000);
 
 		LocationServices.FusedLocationApi.requestLocationUpdates(
 				googleApiClient, request, locationListener);
@@ -154,6 +156,7 @@ public class LocationState {
 		@Override
 		public void onLocationChanged(Location arg0) {
 			// do nothing, we will use getLastLocation()...
+			Log.d(Manager.TAG, "New location: " + arg0);
 		}
 	};
 }
