@@ -26,6 +26,7 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.os.StrictMode;
 import android.util.Log;
 
 /**
@@ -41,6 +42,9 @@ public class HIPRIKeeper {
 
 	public HIPRIKeeper(Context context) {
 		this.context = context;
+
+		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+		StrictMode.setThreadPolicy(policy);
 
 		Config.getDefaultConfig(context);
 		notif = new Notifications(context);
