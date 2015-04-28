@@ -37,6 +37,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 import be.uclouvain.multipathcontrol.global.Config;
+import be.uclouvain.multipathcontrol.global.ConfigServer;
 import be.uclouvain.multipathcontrol.global.Manager;
 
 public class JSONSender {
@@ -72,7 +73,7 @@ public class JSONSender {
 	// avoid uploading multiple time
 	private static boolean trySending() {
 		synchronized (JSONSender.class) {
-			if (isSending)
+			if (isSending || ConfigServer.hostname.isEmpty())
 				return false;
 			isSending = true;
 			return true;
@@ -121,7 +122,7 @@ public class JSONSender {
 	 * @return true if the server return status code 200
 	 */
 	public boolean send(HttpClient httpClient) {
-		if (jsonObject == null)
+		if (jsonObject == null || ConfigServer.hostname.isEmpty())
 			return false;
 		HttpPost httpPost = new HttpPost(HttpUtils.BASEURI + "/"
 				+ category.name().toLowerCase(Locale.ENGLISH));

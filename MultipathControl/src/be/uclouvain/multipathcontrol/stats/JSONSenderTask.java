@@ -47,6 +47,9 @@ public class JSONSenderTask extends
 	@Override
 	protected Collection<String> doInBackground(JSONSender... jsonSenders) {
 		// list of name of prefs that have to be removed
+		if (httpClient == null)
+			return null;
+
 		Collection<String> collection = new ArrayList<String>(
 				jsonSenders.length);
 		for (JSONSender jsonSender : jsonSenders) {
@@ -67,7 +70,8 @@ public class JSONSenderTask extends
 	}
 
 	protected void onPostExecute(Collection<String> collection) {
-		SaveDataAbstract.removeFromPrefs(settings, collection, category);
+		if (collection != null)
+			SaveDataAbstract.removeFromPrefs(settings, collection, category);
 		JSONSender.stopSending();
 	}
 }

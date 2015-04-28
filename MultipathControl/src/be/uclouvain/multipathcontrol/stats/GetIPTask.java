@@ -45,6 +45,9 @@ public class GetIPTask extends AsyncTask<String, Void, String> {
 	@Override
 	protected String doInBackground(String... arg0) {
 		HttpClient httpClient = HttpUtils.getHttpClient(1000);
+		if (httpClient == null)
+			return null;
+
 		HttpGet httpGet = new HttpGet(HttpUtils.BASEURI + '/' + arg0[0]);
 		BufferedReader bReader = null;
 		String line = null;

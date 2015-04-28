@@ -41,6 +41,9 @@ public class HttpUtils {
 	}
 
 	public static HttpClient getHttpClient(int timeout) {
+		if (ConfigServer.hostname.isEmpty())
+			return null;
+
 		DefaultHttpClient defaultHttpClient;
 		if (timeout > 0)
 			defaultHttpClient = new DefaultHttpClient(getParamTimeout(timeout));
