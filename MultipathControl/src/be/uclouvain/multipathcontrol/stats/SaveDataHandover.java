@@ -86,6 +86,7 @@ public class SaveDataHandover extends SaveDataAbstract {
 	public static final String PREFS_PROC_MPTCP_FM     = "procMPTCPFM";
 	public static final String PREFS_SIM_OPERATOR      = "simOperator";
 	public static final String PREFS_SIM_STATE         = "simState";
+	public static final String PREFS_TRACKING          = "tracking";
 	public static final String PREFS_WIFI_BSSID        = "wifiBSSID";
 	public static final String PREFS_WIFI_FREQ         = "wifiFreq";
 	public static final String PREFS_WIFI_SIGNAL_4     = "wifiSignal4";
@@ -119,8 +120,13 @@ public class SaveDataHandover extends SaveDataAbstract {
 					Config.savePowerGPS);
 	}
 
-	public SaveDataHandover(Context context) {
+	private final boolean trackingSec;
+
+	public SaveDataHandover(Context context, boolean trackingSec) {
 		super(context, StatsCategories.HANDOVER);
+
+		this.trackingSec = trackingSec;
+		editor.putBoolean(PREFS_TRACKING, trackingSec);
 
 		getStaticVarsSync(context);
 
@@ -139,6 +145,10 @@ public class SaveDataHandover extends SaveDataAbstract {
 		fromSettings(context);
 
 		save();
+	}
+
+	public SaveDataHandover(Context context) {
+		this(context, false);
 	}
 
 	public static void savePowerGPS(boolean savePowerGPS) {
@@ -308,6 +318,8 @@ public class SaveDataHandover extends SaveDataAbstract {
 	}
 
 	private void fromSystem() {
+		if (trackingSec)
+			return;
 		editor.putString(PREFS_NETSTAT, Cmd.getAllLinesString("netstat", ';')
 				.replaceAll("\\s+", " "));
 		editor.putString(PREFS_PROC_MPTCP,
@@ -345,6 +357,8 @@ public class SaveDataHandover extends SaveDataAbstract {
 	}
 
 	private void fromSettings(Context context) {
+		if (trackingSec)
+			return;
 		try {
 			editor.putBoolean(PREFS_AIRPLANE, Settings.Global.getInt(
 					context.getContentResolver(),

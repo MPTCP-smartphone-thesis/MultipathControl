@@ -31,6 +31,7 @@ import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.util.Log;
+import android.widget.Toast;
 import be.uclouvain.multipathcontrol.global.Config;
 import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.ifaces.IPRoute;
@@ -162,6 +163,20 @@ public class MPCtrl {
 		return true;
 	}
 
+	public boolean setTracking(boolean isChecked) {
+		if (isChecked == Config.trackingSec)
+			return false;
+		Config.trackingSec = isChecked;
+		if (Config.trackingSec)
+			handler.post(runnableTracking);
+		else {
+			Toast.makeText(context, "Stop tracking, sending data",
+					Toast.LENGTH_LONG).show();
+			JSONSender.sendAll(context);
+		}
+		return true;
+	}
+
 	/**
 	 * Restart all active interfaces in order to be sure that all connections
 	 * will be managed by the Proxy and use the right MPTCP options
@@ -226,6 +241,15 @@ public class MPCtrl {
 			Log.d(Manager.TAG, "Schedule: new upload");
 			JSONSender.sendAll(context);
 			handler.postDelayed(this, oneHourMs);
+		}
+	};
+
+	private Runnable runnableTracking = new Runnable() {
+		@Override
+		public void run() {
+			new SaveDataHandover(context, true);
+			if (Config.trackingSec) // continue if enable
+				handler.postDelayed(this, 1000);
 		}
 	};
 }

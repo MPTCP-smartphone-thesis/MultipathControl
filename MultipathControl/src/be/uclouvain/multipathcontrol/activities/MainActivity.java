@@ -89,6 +89,10 @@ public class MainActivity extends Activity {
 		Button testButton = (Button) findViewById(R.id.button_send_data);
 		testButton.setOnClickListener(onClickListenerSend);
 
+		Switch trackingSecSwitch = (Switch) findViewById(R.id.switch_tracking_sec);
+		trackingSecSwitch
+				.setOnCheckedChangeListener(onCheckedChangeListernerTrackingSec);
+
 		// start a new service if needed
 		startService(new Intent(this, MainService.class));
 	}
@@ -192,6 +196,16 @@ public class MainActivity extends Activity {
 		public void onClick(View v) {
 			Log.d(Manager.TAG, "Send data from button");
 			JSONSender.sendAll(getApplicationContext());
+		}
+	};
+
+	private OnCheckedChangeListener onCheckedChangeListernerTrackingSec = new OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView,
+				boolean isChecked) {
+			if (mpctrl.setTracking(isChecked))
+				// track with better accuracy
+				savePowerGPSSwitch.setChecked(!isChecked);
 		}
 	};
 }

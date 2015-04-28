@@ -45,6 +45,8 @@ public class Config {
 	public static boolean savePowerGPS;
 	public static String tcpcc;
 
+	public static boolean trackingSec = false;
+
 	private Config() {
 	}
 
