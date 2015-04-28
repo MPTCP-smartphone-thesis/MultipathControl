@@ -26,6 +26,9 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 
 import be.uclouvain.multipathcontrol.global.ConfigServer;
 
@@ -37,8 +40,12 @@ public class HttpUtils {
 	private HttpUtils() {
 	}
 
-	public static HttpClient getHttpClient() {
-		DefaultHttpClient defaultHttpClient = new DefaultHttpClient();
+	public static HttpClient getHttpClient(int timeout) {
+		DefaultHttpClient defaultHttpClient;
+		if (timeout > 0)
+			defaultHttpClient = new DefaultHttpClient(getParamTimeout(timeout));
+		else
+			defaultHttpClient = new DefaultHttpClient();
 		if (ConfigServer.username != null && !ConfigServer.username.isEmpty()) {
 			Credentials creds = new UsernamePasswordCredentials(
 					ConfigServer.username, ConfigServer.password);
@@ -49,5 +56,20 @@ public class HttpUtils {
 			credProvider.setCredentials(scope, creds);
 		}
 		return defaultHttpClient;
+	}
+
+	public static HttpClient getHttpClient() {
+		return getHttpClient(0);
+	}
+
+	/**
+	 * @param timeout in ms
+	 * @return BasicHttpParams with timeout for the connection and the socket
+	 */
+	private static HttpParams getParamTimeout(int timeout) {
+		HttpParams httpParameters = new BasicHttpParams();
+		HttpConnectionParams.setConnectionTimeout(httpParameters, timeout);
+		HttpConnectionParams.setSoTimeout(httpParameters, timeout);
+		return httpParameters;
 	}
 }
