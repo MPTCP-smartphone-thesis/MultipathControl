@@ -16,6 +16,7 @@
     <string name="notification_title">Multipath Enabled</string>
     <string name="notification_text">Click to change options</string>
     <string name="button_tcp_cc">TCP CC Algorithms</string>
+    <string name="switch_tracking">Track: get data on changes</string>
     <string name="switch_tracking_sec">Track: get data each sec</string>
 
 </resources>

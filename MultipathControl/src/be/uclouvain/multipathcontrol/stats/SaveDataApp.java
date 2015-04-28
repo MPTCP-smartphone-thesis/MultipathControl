@@ -36,6 +36,7 @@ public class SaveDataApp extends SaveDataAbstract {
 	public static final String PREFS_SAVE_BATTERY = "saveBattery";
 	public static final String PREFS_SAVE_POW_GPS = "savePowerGPS";
 	public static final String PREFS_IPV6         = "ipv6";
+	public static final String PREFS_TRACKING     = "tracking";
 	public static final String PREFS_TCPCC        = "TCPCCAlgo";
 
 	private static PackageInfo info = null;
@@ -79,6 +80,7 @@ public class SaveDataApp extends SaveDataAbstract {
 		editor.putBoolean(PREFS_SAVE_BATTERY, Config.saveBattery);
 		editor.putBoolean(PREFS_IPV6, Config.ipv6);
 		editor.putBoolean(PREFS_SAVE_POW_GPS, Config.savePowerGPS);
+		editor.putBoolean(PREFS_TRACKING, Config.tracking);
 		editor.putString(PREFS_TCPCC, Config.tcpcc);
 	}
 

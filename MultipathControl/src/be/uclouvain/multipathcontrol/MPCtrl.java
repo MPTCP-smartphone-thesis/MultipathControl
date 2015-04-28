@@ -33,6 +33,7 @@ import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
 import be.uclouvain.multipathcontrol.global.Config;
+import be.uclouvain.multipathcontrol.global.ConfigServer;
 import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.ifaces.IPRoute;
 import be.uclouvain.multipathcontrol.ifaces.MobileDataMgr;
@@ -60,7 +61,7 @@ public class MPCtrl {
 					.getSystemService(Context.POWER_SERVICE);
 			if (pm.isScreenOn())
 				mobileDataMgr.setMobileDataActive(Config.mEnabled);
-			if (iproute.monitorInterfaces())
+			if (iproute.monitorInterfaces() && Config.tracking)
 				new SaveDataHandover(context);
 		}
 	};
@@ -91,8 +92,10 @@ public class MPCtrl {
 			notif.showNotification();
 
 		// Log
-		new SaveDataApp(context);
-		new SaveDataHandover(context);
+		if (Config.tracking) {
+			new SaveDataApp(context);
+			new SaveDataHandover(context);
+		}
 	}
 
 	public void destroy() {
@@ -119,7 +122,7 @@ public class MPCtrl {
 
 		if (isChecked) {
 			notif.showNotification();
-			if (iproute.monitorInterfaces())
+			if (iproute.monitorInterfaces() && Config.tracking)
 				new SaveDataHandover(context);
 		} else {
 			notif.hideNotification();
@@ -163,6 +166,17 @@ public class MPCtrl {
 		return true;
 	}
 
+	public boolean setTracking(boolean isChecked) {
+		if (isChecked == Config.tracking)
+			return false;
+		Config.tracking = isChecked;
+		Config.saveStatus(context);
+		// we also need to know when it has been disabled
+		if (!Config.tracking)
+			new SaveDataApp(context);
+		return true;
+	}
+
 	public boolean setTrackingSec(boolean isChecked) {
 		if (isChecked == Config.trackingSec)
 			return false;
@@ -175,6 +189,16 @@ public class MPCtrl {
 			JSONSender.sendAll(context);
 		}
 		return true;
+	}
+
+	public void displayWarningIfNoHostname(boolean isChecked) {
+		if (isChecked && ConfigServer.hostname.isEmpty())
+			Toast.makeText(
+					context,
+					"Collecting data but no hostname defined. Data will be "
+							+ "stored in the preferences of this app but never"
+							+ " sent to a server.",
+					Toast.LENGTH_LONG).show();
 	}
 
 	/**
