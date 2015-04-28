@@ -48,6 +48,7 @@ public class MainActivity extends Activity {
 	private Switch saveBatterySwitch;
 	private Switch ipv6Switch;
 	private Switch savePowerGPSSwitch;
+	private Switch trackingSecSwitch;
 	private Button tcpCCButton;
 
 	@Override
@@ -61,6 +62,7 @@ public class MainActivity extends Activity {
 		saveBatterySwitch = (Switch) findViewById(R.id.switch_save_battery);
 		ipv6Switch = (Switch) findViewById(R.id.switch_ipv6);
 		savePowerGPSSwitch = (Switch) findViewById(R.id.switch_save_power_gps);
+		trackingSecSwitch = (Switch) findViewById(R.id.switch_tracking_sec);
 		tcpCCButton = (Button) findViewById(R.id.button_tcp_cc);
 
 		mpctrl = Manager.create(getApplicationContext());
@@ -84,14 +86,13 @@ public class MainActivity extends Activity {
 		ipv6Switch.setOnCheckedChangeListener(onCheckedChangeListernerIPv6);
 		savePowerGPSSwitch
 				.setOnCheckedChangeListener(onCheckedChangeListernerSavePowerGPS);
+		trackingSecSwitch
+				.setOnCheckedChangeListener(onCheckedChangeListernerTrackingSec);
 		tcpCCButton.setOnClickListener(onClickListenerTcpCC);
 
 		Button testButton = (Button) findViewById(R.id.button_send_data);
 		testButton.setOnClickListener(onClickListenerSend);
 
-		Switch trackingSecSwitch = (Switch) findViewById(R.id.switch_tracking_sec);
-		trackingSecSwitch
-				.setOnCheckedChangeListener(onCheckedChangeListernerTrackingSec);
 
 		// start a new service if needed
 		startService(new Intent(this, MainService.class));
@@ -117,6 +118,7 @@ public class MainActivity extends Activity {
 		saveBatterySwitch.setChecked(Config.saveBattery);
 		ipv6Switch.setChecked(Config.ipv6);
 		savePowerGPSSwitch.setChecked(Config.savePowerGPS);
+		trackingSecSwitch.setChecked(Config.trackingSec);
 		tcpCCButton.setText(getText(R.string.button_tcp_cc) + ": "
 				+ Config.tcpcc);
 	}
@@ -183,6 +185,17 @@ public class MainActivity extends Activity {
 		}
 	};
 
+	private OnCheckedChangeListener onCheckedChangeListernerTrackingSec = new OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView,
+				boolean isChecked) {
+			if (mpctrl.setTrackingSec(isChecked)) {
+				// track with better accuracy
+				savePowerGPSSwitch.setChecked(!isChecked);
+			}
+		}
+	};
+
 	private OnClickListener onClickListenerTcpCC = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
@@ -196,16 +209,6 @@ public class MainActivity extends Activity {
 		public void onClick(View v) {
 			Log.d(Manager.TAG, "Send data from button");
 			JSONSender.sendAll(getApplicationContext());
-		}
-	};
-
-	private OnCheckedChangeListener onCheckedChangeListernerTrackingSec = new OnCheckedChangeListener() {
-		@Override
-		public void onCheckedChanged(CompoundButton buttonView,
-				boolean isChecked) {
-			if (mpctrl.setTracking(isChecked))
-				// track with better accuracy
-				savePowerGPSSwitch.setChecked(!isChecked);
 		}
 	};
 }

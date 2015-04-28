@@ -163,7 +163,7 @@ public class MPCtrl {
 		return true;
 	}
 
-	public boolean setTracking(boolean isChecked) {
+	public boolean setTrackingSec(boolean isChecked) {
 		if (isChecked == Config.trackingSec)
 			return false;
 		Config.trackingSec = isChecked;
