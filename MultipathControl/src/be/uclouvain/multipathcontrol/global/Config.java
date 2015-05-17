@@ -47,6 +47,7 @@ public class Config {
 	public static boolean tracking;
 	public static String tcpcc;
 
+	public static int mobileDataActiveTime = 5000;
 	public static boolean trackingSec = false;
 
 	private Config() {

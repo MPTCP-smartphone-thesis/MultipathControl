@@ -181,9 +181,12 @@ public class MPCtrl {
 		if (isChecked == Config.trackingSec)
 			return false;
 		Config.trackingSec = isChecked;
-		if (Config.trackingSec)
+		if (Config.trackingSec) {
+			Config.mobileDataActiveTime = 1000;
 			handler.post(runnableTracking);
+		}
 		else {
+			Config.mobileDataActiveTime = 5000;
 			Toast.makeText(context, "Stop tracking, sending data",
 					Toast.LENGTH_LONG).show();
 			JSONSender.sendAll(context);
@@ -242,18 +245,16 @@ public class MPCtrl {
 	 * Ensures that the data interface and WiFi are connected at the same time.
 	 */
 	private Runnable runnableSetMobileDataActive = new Runnable() {
-		final long fiveSecondsMs = 5 * 1000;
-
 		@Override
 		public void run() {
 			long nowTime = System.currentTimeMillis();
 			// do not try keep mobile data active in deep sleep mode
 			if (Config.mEnabled
-					&& nowTime - lastTimeHandler < fiveSecondsMs * 2)
+					&& nowTime - lastTimeHandler < Config.mobileDataActiveTime * 2)
 				// to not disable cellular iface
 				mobileDataMgr.setMobileDataActive(Config.mEnabled);
 			lastTimeHandler = nowTime;
-			handler.postDelayed(this, fiveSecondsMs);
+			handler.postDelayed(this, Config.mobileDataActiveTime);
 		}
 	};
 
