@@ -3,6 +3,11 @@ MultipathControl
 
 GUI to manage MPTCP settings and log statistics on Android devices.
 
+APK
+---
+
+APK are available on [Releases](https://github.com/MPTCP-smartphone-thesis/MultipathControl/releases) section.
+
 Credits
 -------
 
