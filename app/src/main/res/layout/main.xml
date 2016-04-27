@@ -1,0 +1,132 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+
+    <Switch
+        android:id="@+id/switch_multiiface"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/switch_multiiface"
+        android:text="@string/switch_multiiface" />
+
+    <Switch
+        android:id="@+id/switch_default_data"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_multiiface"
+        android:layout_below="@+id/switch_multiiface"
+        android:layout_marginTop="5dp"
+        android:text="@string/switch_default_data" />
+
+    <Switch
+        android:id="@+id/switch_data_backup"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_default_data"
+        android:layout_below="@+id/switch_default_data"
+        android:layout_marginTop="5dp"
+        android:contentDescription="@string/switch_data_backup_desc"
+        android:text="@string/switch_data_backup" />
+
+    <TextView
+        android:id="@+id/text_data_backup_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_save_battery"
+        android:layout_below="@+id/switch_data_backup"
+        android:text="@string/switch_data_backup_desc"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <Switch
+        android:id="@+id/switch_save_battery"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_data_backup"
+        android:layout_below="@+id/text_data_backup_desc"
+        android:layout_marginTop="5dp"
+        android:contentDescription="@string/switch_save_battery_desc"
+        android:text="@string/switch_save_battery" />
+
+    <TextView
+        android:id="@+id/text_save_battery_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_save_battery"
+        android:layout_below="@+id/switch_save_battery"
+        android:text="@string/switch_save_battery_desc"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <Switch
+        android:id="@+id/switch_ipv6"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_data_backup"
+        android:layout_below="@+id/text_save_battery_desc"
+        android:layout_marginTop="5dp"
+        android:contentDescription="@string/switch_ipv6_desc"
+        android:text="@string/switch_ipv6" />
+
+    <TextView
+        android:id="@+id/text_ipv6_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_ipv6"
+        android:layout_below="@+id/switch_ipv6"
+        android:text="@string/switch_ipv6_desc"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <Switch
+        android:id="@+id/switch_save_power_gps"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_data_backup"
+        android:layout_below="@+id/text_ipv6_desc"
+        android:layout_marginTop="5dp"
+        android:text="@string/switch_save_power_gps" />
+
+    <Switch
+        android:id="@+id/switch_tracking"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_data_backup"
+        android:layout_below="@+id/switch_save_power_gps"
+        android:layout_marginTop="5dp"
+        android:text="@string/switch_tracking" />
+
+    <Switch
+        android:id="@+id/switch_tracking_sec"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/switch_data_backup"
+        android:layout_below="@+id/switch_tracking"
+        android:layout_marginTop="5dp"
+        android:text="@string/switch_tracking_sec" />
+
+    <Button
+        android:id="@+id/button_tcp_cc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/switch_tracking_sec"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:text="@string/button_tcp_cc" />
+
+    <Button
+        android:id="@+id/button_send_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button_tcp_cc"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:text="@string/button_send_data"
+        android:visibility="visible" />
+
+</RelativeLayout>

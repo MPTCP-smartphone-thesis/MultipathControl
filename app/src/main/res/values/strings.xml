@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Multipath Control</string>
+    <string name="action_settings">Settings</string>
+    <string name="switch_multiiface">Enable multi-interface</string>
+    <string name="switch_default_data">Default route via cellular</string>
+    <string name="switch_data_backup">Set cellular as backup</string>
+    <string name="switch_data_backup_desc">Patched version of iproute is needed</string>
+    <string name="switch_save_battery">Save battery by allowing deep sleep mode</string>
+    <string name="switch_save_battery_desc">The cellular connection will not be maintained all the time. Then when switching to a new Wi-Fi router, the cellular connection will be stopped for a few micro seconds but it\'s supported by MPTCP</string>
+    <string name="switch_ipv6">Enable IPv6 support</string>
+    <string name="switch_ipv6_desc">MPTCP and this application support IPv6 but not ShadowSocks proxy</string>
+    <string name="switch_save_power_gps">Save power GPS</string>
+    <string name="button_send_data">Send log files now</string>
+    <string name="notification_title">Multipath Enabled</string>
+    <string name="notification_text">Click to change options</string>
+    <string name="button_tcp_cc">TCP CC Algorithms</string>
+    <string name="switch_tracking">Track: get data on changes</string>
+    <string name="switch_tracking_sec">Track: get data each sec</string>
+
+</resources>
