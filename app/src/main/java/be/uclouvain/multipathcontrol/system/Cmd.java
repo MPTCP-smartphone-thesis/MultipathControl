@@ -42,6 +42,17 @@ public class Cmd {
 		return Runtime.getRuntime().exec(new String[] { "su", "-c", cmd });
 	}
 
+	public static void runAsRootSafe(String cmd) throws Exception {
+		try {
+			Process p = runAsRoot(cmd);
+			p.getInputStream().close();
+			p.getErrorStream().close();
+			p.getOutputStream().close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void runAsRoot(String[] cmds) throws Exception {
 		for (String cmd : cmds) {
 			runAsRoot(cmd);
@@ -60,6 +71,9 @@ public class Cmd {
 					p.getInputStream()));
 			line = in.readLine();
 			in.close();
+			p.getInputStream().close();
+			p.getErrorStream().close();
+			p.getOutputStream().close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
@@ -77,7 +91,7 @@ public class Cmd {
 	public static List<String> getAllLines(String cmd, boolean root) {
 		List<String> lines = new ArrayList<String>();
 		String line;
-		Process p;
+		Process p = null;
 		BufferedReader in = null;
 		try {
 			if (root)
@@ -94,6 +108,9 @@ public class Cmd {
 			if (in != null)
 				try {
 					in.close();
+					p.getInputStream().close();
+					p.getErrorStream().close();
+					p.getOutputStream().close();
 				} catch (IOException e) {
 				}
 		}
@@ -107,6 +124,8 @@ public class Cmd {
 	public static String getAllLinesString(String cmd, boolean root, char sep) {
 		StringBuffer sBuffer = new StringBuffer();
 		List<String> lines = getAllLines(cmd, root);
+		if (lines == null)
+			return null;
 		for (String line : lines) {
 			sBuffer.append(line);
 			sBuffer.append(sep);

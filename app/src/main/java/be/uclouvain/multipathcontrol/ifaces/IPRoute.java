@@ -20,6 +20,9 @@
 
 package be.uclouvain.multipathcontrol.ifaces;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -27,7 +30,9 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
+import android.os.Handler;
 import android.util.Log;
 import be.uclouvain.multipathcontrol.global.Config;
 import be.uclouvain.multipathcontrol.global.Manager;
@@ -40,11 +45,47 @@ public class IPRoute {
 	private final MobileDataMgr mobileDataMgr;
 
 	private HashMap<String, Integer> mIntfState;
+	private int ifaceCount;
+
+	public class DefaultIFaceWatchdogRunnable implements Runnable {
+		private IPRoute iproute;
+		private int counter;
+		public DefaultIFaceWatchdogRunnable(IPRoute ip) {
+			this.iproute = ip;
+			this.counter = 0;
+		}
+		public void run() {
+			if (counter == 0) {
+				counter = 5;
+			}
+			List<String> cmdOutput = Cmd.getAllLines("ip route", false);
+			if (cmdOutput != null && cmdOutput.size() > 0) {
+				int count = 0;
+				for (String line: cmdOutput) {
+					if (line.startsWith("default"))
+						count += 1;
+				}
+				if (count != iproute.ifaceCount) {
+					Log.d("defaultIfaceWatchdow", "Bites with " + count + " and " + iproute.ifaceCount);
+					IPRouteUtils.setDefaultRoute();
+				}
+			}
+			counter -= 1;
+			if (counter > 0)
+				handler.postDelayed(this, 1000);
+		}
+	};
+
+	private Handler handler = new Handler();
+	private DefaultIFaceWatchdogRunnable difw;
 
 	public IPRoute(MobileDataMgr mobileDataMgr) {
 		mIntfState = new HashMap<String, Integer>();
 		this.mobileDataMgr = mobileDataMgr;
+		this.ifaceCount = 0;
 		monitorInterfaces();
+		this.difw = new DefaultIFaceWatchdogRunnable(this);
+		this.handler.postDelayed(difw, 1000);
 	}
 
 	/* Add Policy routing for interface */
@@ -85,6 +126,12 @@ public class IPRoute {
 			}
 
 			try {
+				String metric;
+				if (IPRouteUtils.isMobile(iface)) {
+					metric = Config.defaultRouteData ? "50" : "100";
+				} else {
+					metric = Config.defaultRouteData ? "100" : "50";
+				}
 				Cmd.runAsRoot(new String[] {
 						"ip " + IPRouteUtils.getIPVersion(hostAddr)
 								+ " rule add from " + hostAddr + " table "
@@ -95,15 +142,17 @@ public class IPRoute {
 								+ " scope link table " + table,
 						"ip " + IPRouteUtils.getIPVersion(gateway)
 								+ " route add default via " + gateway + " dev "
-								+ iface.getName() + " table " + table, });
+								+ iface.getName() + " metric " + metric + " table " + table, });
 				if (IPRouteUtils.isMobile(iface)) {
-					if (Config.defaultRouteData)
-						IPRouteUtils.setDefaultRoute(iface.getName(), gateway,
-								false);
+					IPRouteUtils.setDefaultRoute(iface.getName(), gateway, false,
+							Config.defaultRouteData);
 					if (Config.dataBackup)
-						Cmd.runAsRoot("ip link set dev " + iface.getName()
+						Cmd.runAsRootSafe("ip link set dev " + iface.getName()
 								+ " multipath backup");
 					mobileDataMgr.keepMobileConnectionAlive();
+				} else if (IPRouteUtils.isWifi(iface)) {
+					IPRouteUtils.setDefaultRoute(iface.getName(), gateway,
+								false, !Config.defaultRouteData);
 				}
 			} catch (Exception e) {
 			}
@@ -115,6 +164,7 @@ public class IPRoute {
 
 	public boolean monitorInterfaces() {
 		boolean update = false;
+		int count = 0;
 		try {
 			for (NetworkInterface iface : Collections.list(NetworkInterface
 					.getNetworkInterfaces())) {
@@ -124,6 +174,9 @@ public class IPRoute {
 
 				if (iface.isLoopback())
 					continue;
+
+				if (iface.isUp() && (IPRouteUtils.isMobile(iface) || IPRouteUtils.isWifi(iface)))
+					count += 1;
 
 				if (!mIntfState.containsKey(name)) {
 					if (addrs != 1) /* hashcode of an empty List is 1 */
@@ -147,8 +200,13 @@ public class IPRoute {
 		}
 
 		// if WLan iface has been modified, default route will be wrong
-		if (update && Config.defaultRouteData)
-				IPRouteUtils.setDefaultRoute();
+		// But if Android does not stop the mobile interface, change default interface on every update
+		if (update || count != this.ifaceCount) {
+			IPRouteUtils.setDefaultRoute();
+			this.handler.postDelayed(difw, 1000);;
+		}
+
+		this.ifaceCount = count;
 
 		return update;
 	}

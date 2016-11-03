@@ -77,7 +77,7 @@ public class MobileDataMgr {
 
 		ConnectivityManager cManager = (ConnectivityManager) context
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
-		if (isMobileDataEnabled() && isWifiConnected() && mEnabled)
+		if (isMobileDataEnabled() && mEnabled && isWifiConnected())
 			cManager.startUsingNetworkFeature(ConnectivityManager.TYPE_MOBILE,
 					"enableHIPRI");
 		else

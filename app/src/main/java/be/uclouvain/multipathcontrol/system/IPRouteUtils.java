@@ -51,6 +51,13 @@ public class IPRouteUtils {
 			return DEFAULT_WLAN_IFACE;
 	}
 
+	public static String getOtherIFace() {
+		if (Config.defaultRouteData)
+			return DEFAULT_WLAN_IFACE;
+		else
+			return DEFAULT_DATA_IFACE;
+	}
+
 	public static int mapIfaceToTable(String ifaceName) {
 		return Math.abs(ifaceName.hashCode()) % 32765 + 1;
 	}
@@ -143,6 +150,10 @@ public class IPRouteUtils {
 		setDataBackup();
 	}
 
+	public static boolean isWifi(String ifaceName) { return ifaceName.startsWith("wlan"); }
+
+	public static boolean isWifi(NetworkInterface iface) { return isWifi(iface.getName()); }
+
 	public static boolean isMobile(String ifaceName) {
 		return ifaceName.startsWith("rmnet");
 	}
@@ -171,16 +182,47 @@ public class IPRouteUtils {
 	}
 
 	public static boolean setDefaultRoute(String iface, String gateway,
-			boolean withScope) {
+										  boolean withScope) {
 		if (gateway == null || gateway.isEmpty())
 			return false;
 		gateway = removeScope(gateway);
 		try {
-			Cmd.runAsRoot("ip " + getIPVersion(gateway)
+			// ensure only one default route...
+			Cmd.runAsRootSafe("ip " + getIPVersion(gateway)
 					+ " route change default via " + gateway + " dev " + iface);
 			// if there where no default route
-			Cmd.runAsRoot("ip " + getIPVersion(gateway)
+			Cmd.runAsRootSafe("ip " + getIPVersion(gateway)
 					+ " route add default via " + gateway + " dev " + iface);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		setDataBackup();
+		return true;
+	}
+
+	public static boolean setDefaultRoute(String iface, String gateway, boolean withScope, boolean primaryDefault) {
+		if (gateway == null || gateway.isEmpty())
+			return false;
+		gateway = removeScope(gateway);
+		try {
+			String metric = primaryDefault ? "50" : "100";
+			// ensure only one default route...
+			Cmd.runAsRootSafe("ip " + getIPVersion(gateway)
+					+ " route change default via " + gateway + " dev " + iface + " metric " + metric);
+			Cmd.runAsRootSafe("ip " + getIPVersion(gateway)
+					+ " route add default via " + gateway + " dev " + iface + " metric " + metric);
+			// if there where a previous default route without metric
+			List<String> cmdOutput = Cmd.getAllLines("ip route", false);
+			if (cmdOutput != null && cmdOutput.size() > 0) {
+				for (String line : cmdOutput) {
+					if (line.startsWith("default") && !line.contains("metric")) {
+						String[] elems = line.split("\\s+");
+						Cmd.runAsRootSafe("ip " + getIPVersion(elems[2])
+								+ " route delete default via " + elems[2] + " dev " + elems[4]);
+					}
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -191,9 +233,11 @@ public class IPRouteUtils {
 
 	public static boolean setDefaultRoute() {
 		String iface = getDefaultIFace();
+		String oface = getOtherIFace();
 
 		String gateway = getGateway(iface);
-		return setDefaultRoute(iface, gateway, true);
+		String oGateway = getGateway(oface);
+		return setDefaultRoute(iface, gateway, true, true) && setDefaultRoute(oface, oGateway, true, false);
 	}
 
 	public static boolean setDataBackup() {
@@ -204,7 +248,7 @@ public class IPRouteUtils {
 			status = "on";
 
 		try {
-			Cmd.runAsRoot("ip link set dev " + DEFAULT_DATA_IFACE
+			Cmd.runAsRootSafe("ip link set dev " + DEFAULT_DATA_IFACE
 					+ " multipath " + status);
 		} catch (Exception e) {
 			return false;

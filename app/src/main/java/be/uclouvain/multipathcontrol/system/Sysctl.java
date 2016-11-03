@@ -58,7 +58,11 @@ public class Sysctl {
 		int rc = 1;
 		try {
 			String path = BASE + '/' + key.replace('.', '/');
-			rc = Cmd.runAsRoot("echo " + value + " > " + path).waitFor();
+			Process p = Cmd.runAsRoot("echo " + value + " > " + path);
+			rc = p.waitFor();
+			p.getInputStream().close();
+			p.getErrorStream().close();
+			p.getOutputStream().close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
