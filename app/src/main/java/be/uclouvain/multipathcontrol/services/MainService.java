@@ -36,6 +36,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
@@ -50,117 +52,118 @@ import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.system.Cmd;
 
 public class MainService extends Service {
-	public static final String CONFIG_FILE = "mptcp_ctrl.conf";
-	private static final String SERVER_IP = "PUT YOUR IP HERE"; // Nothing better found now...
-	private static final int NB_CONFIGS = 4;
+    public static final String CONFIG_FILE = "mptcp_ctrl.conf";
+    private static final String TCPDUMP_TRACE_FOLDER = "mptcp_ctrl_traces";
+    private static final String SERVER_IP = "PUT YOUR IP HERE"; // Nothing better found now...
+    private static final int NB_CONFIGS = 4;
     private static final boolean[] DATA_BACKUP = {false, true, true, true};
     private static final String[] TCP_RETRIES3 = {"16", "16", "16", "16"};
     private static final String[] MPTCP_ACTIVE_BK = {"0", "0", "0", "1"};
     private static final String[] MPTCP_OLD_BK = {"0", "0", "1", "0"};
     private static final String[] OPEN_BUP = {"1", "1", "1", "0"};
 
-	private static final long THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+    private static final long THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
-	private MPCtrl mpctrl;
-	private Random generator;
-	private Timer timer;
-	private int configId;
+    private MPCtrl mpctrl;
+    private Random generator;
+    private Timer timer;
+    private int configId;
 
-	private static MainService currentService;
+    private static MainService currentService;
 
-	@Override
-	public IBinder onBind(Intent intent) {
-		return null; // not allow binding
-	}
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null; // not allow binding
+    }
 
-	public void onCreate() {
-		super.onCreate();
-		mpctrl = Manager.create(getApplicationContext());
-		Log.i(Manager.TAG, "Create service");
-		if (mpctrl == null) {
-			Toast.makeText(this,
-					"MPControl: It seems this is not a rooted device",
-					Toast.LENGTH_LONG).show();
-			stopSelf();
-			return;
-		}
-		// Configure!
-		// Schedule timer (in configure)
-		generator = new Random();
+    public void onCreate() {
+        super.onCreate();
+        mpctrl = Manager.create(getApplicationContext());
+        Log.i(Manager.TAG, "Create service");
+        if (mpctrl == null) {
+            Toast.makeText(this,
+                    "MPControl: It seems this is not a rooted device",
+                    Toast.LENGTH_LONG).show();
+            stopSelf();
+            return;
+        }
+        // Configure!
+        // Schedule timer (in configure)
+        generator = new Random();
         currentService = this;
-		configureAndReschedule();
-	}
+        configureAndReschedule();
+    }
 
-	class ConfigureTask extends TimerTask {
-		public void run() { configureAndReschedule(); };
-	}
+    class ConfigureTask extends TimerTask {
+        public void run() { configureAndReschedule(); };
+    }
 
 
-	public String getDeviceId() {
-		return Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
-	}
+    public String getDeviceId() {
+        return Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
 
-	public static MainService getService() {
-		return currentService;
-	}
+    public static MainService getService() {
+        return currentService;
+    }
 
-	public int getConfigNumber() {
-		return configId;
-	}
+    public int getConfigNumber() {
+        return configId;
+    }
 
-	public Date getDateCurrentTimeZone(long timestamp) {
-		try{
-			Calendar calendar = Calendar.getInstance();
-			TimeZone tz = TimeZone.getDefault();
-			calendar.setTimeInMillis(timestamp * 1000);
-			calendar.add(Calendar.MILLISECOND, tz.getOffset(calendar.getTimeInMillis()));
-			return calendar.getTime();
-		}catch (Exception e) {
-		}
-		return null;
-	}
+    public Date getDateCurrentTimeZone(long timestamp) {
+        try{
+            Calendar calendar = Calendar.getInstance();
+            TimeZone tz = TimeZone.getDefault();
+            calendar.setTimeInMillis(timestamp * 1000);
+            calendar.add(Calendar.MILLISECOND, tz.getOffset(calendar.getTimeInMillis()));
+            return calendar.getTime();
+        }catch (Exception e) {
+        }
+        return null;
+    }
 
-	private boolean checkConfigFile() {
+    private boolean checkConfigFile() {
 		/* Return true if the configuration can be changed */
-		final File file = new File(Environment.getExternalStorageDirectory()
-				.getAbsolutePath(), CONFIG_FILE);
-		if (!file.exists()) {
-			Log.d("MAINSERVICE", "Config file not found");
-			return true;
-		}
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(file));
-			configId = Integer.parseInt(br.readLine());
-			String serverIp = br.readLine();
-			Date lastModified = getDateCurrentTimeZone(Long.parseLong(br.readLine()));
+        final File file = new File(Environment.getExternalStorageDirectory()
+                .getAbsolutePath(), CONFIG_FILE);
+        if (!file.exists()) {
+            Log.d("MAINSERVICE", "Config file not found");
+            return true;
+        }
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(file));
+            configId = Integer.parseInt(br.readLine());
+            String serverIp = br.readLine();
+            Date lastModified = getDateCurrentTimeZone(Long.parseLong(br.readLine()));
 
-			// If less than 3 hours, don't change the config
-			if (getDateDiff(lastModified, new Date(), TimeUnit.MILLISECONDS) <= THREE_HOURS_MS)
-				return false;
+            // If less than 3 hours, don't change the config
+            if (getDateDiff(lastModified, Calendar.getInstance().getTime(), TimeUnit.MILLISECONDS) <= THREE_HOURS_MS)
+                return false;
 
-		} catch (FileNotFoundException e) {
-			Log.e("MAINSERVICE", "Config file not found but file exists...");
-			return true;
-		} catch (IOException e) {
-			Log.e("MAINSERVICE", "IOException: " + e);
-			return true;
-		} catch (NumberFormatException e) {
-			Log.e("MAINSERVICE", "NumberFormatException: " + e);
-			return true;
-		} finally {
-			try {
-				// Don't forget to close the file!
-				if (br != null)
-					br.close();
-			} catch (IOException e) {}
-		}
-		return true;
-	}
+        } catch (FileNotFoundException e) {
+            Log.e("MAINSERVICE", "Config file not found but file exists...");
+            return true;
+        } catch (IOException e) {
+            Log.e("MAINSERVICE", "IOException: " + e);
+            return true;
+        } catch (NumberFormatException e) {
+            Log.e("MAINSERVICE", "NumberFormatException: " + e);
+            return true;
+        } finally {
+            try {
+                // Don't forget to close the file!
+                if (br != null)
+                    br.close();
+            } catch (IOException e) {}
+        }
+        return true;
+    }
 
-	private void configure() {
-		// Select random number
-		configId = generator.nextInt(NB_CONFIGS);
+    private void configure() {
+        // Select random number
+        configId = generator.nextInt(NB_CONFIGS);
         Log.d("MAINSERVICE", "Selected config " + configId);
         mpctrl.setDataBackup(DATA_BACKUP[configId]);
         Config.dataBackup = DATA_BACKUP[configId];
@@ -173,76 +176,165 @@ public class MainService extends Service {
         } catch (Exception e) {
             Log.e("MAINSERVICE", "Holy shit: " + e.toString());
         }
-	}
+    }
 
-	private void writeConfigFile() {
-		File file = new File(Environment.getExternalStorageDirectory()
-				.getAbsolutePath(), CONFIG_FILE);
-		try {
-			PrintWriter pw = new PrintWriter(new FileWriter(file, false));
-			pw.println(configId);
-			pw.println(SERVER_IP);
-			pw.println(System.currentTimeMillis());
-			pw.close();
-		} catch(IOException e) {
-			Log.e("MAINSERVICE", "IOException: " + e);
-		}
+    private void writeConfigFile() {
+        File file = new File(Environment.getExternalStorageDirectory()
+                .getAbsolutePath(), CONFIG_FILE);
+        try {
+            PrintWriter pw = new PrintWriter(new FileWriter(file, false));
+            pw.println(configId);
+            pw.println(SERVER_IP);
+            pw.println(System.currentTimeMillis());
+            pw.close();
+        } catch(IOException e) {
+            Log.e("MAINSERVICE", "IOException: " + e);
+        }
 
-	}
+    }
 
-	/**
-	 * Get a diff between two dates
-	 * @param date1 the oldest date
-	 * @param date2 the newest date
-	 * @param timeUnit the unit in which you want the diff
-	 * @return the diff value, in the provided unit
-	 */
-	public static long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
-		long diffInMillies = date2.getTime() - date1.getTime();
-		return timeUnit.convert(diffInMillies, TimeUnit.MILLISECONDS);
-	}
+    /**
+     * Get a diff between two dates
+     * @param date1 the oldest date
+     * @param date2 the newest date
+     * @param timeUnit the unit in which you want the diff
+     * @return the diff value, in the provided unit
+     */
+    public static long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
+        long diffInMillies = date2.getTime() - date1.getTime();
+        return timeUnit.convert(diffInMillies, TimeUnit.MILLISECONDS);
+    }
 
-	public static Date addDays(Date date, int days)
-	{
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		cal.add(Calendar.DATE, days); //minus number would decrement the days
-		return cal.getTime();
-	}
+    public static Date addDays(Date date, int days)
+    {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.DATE, days); //minus number would decrement the days
+        return cal.getTime();
+    }
 
-	private void reschedule() {
-		// Reschedule to reconfigure at 3 o'clock, except if device is up since less than 3 hours
-		timer = new Timer(true);
-		Date now = new Date();
-		long toAdd = 0;
-		if (now.getHours() < 3)
-			toAdd = 86400000;
-		Date next = addDays(now, 1);
-		next.setHours(3);
-		next.setMinutes(0);
-		long diff = getDateDiff(now, next, TimeUnit.MILLISECONDS);
-		timer.schedule(new ConfigureTask(), diff + toAdd);
-	}
+    private void reschedule() {
+        // Reschedule to reconfigure at 3 o'clock, except if device is up since less than 3 hours
+        timer = new Timer(true);
+        Date now = Calendar.getInstance().getTime();
+        long toAdd = 0;
+        if (now.getHours() < 3)
+            toAdd = 86400000;
+        Date next = addDays(now, 1);
+        next.setHours(3);
+        next.setMinutes(0);
+        long diff = getDateDiff(now, next, TimeUnit.MILLISECONDS);
+        timer.schedule(new ConfigureTask(), diff + toAdd);
+    }
 
-	public void configureAndReschedule() {
-		if (checkConfigFile()) {
-			configure();
-			writeConfigFile();
-			reschedule();
-		}
-	}
+    private void killTcpdump() {
+        String cmd = "pkill tcpdump; sleep 1";
+        try {
+            Cmd.runAsRootSafe(cmd);
+        } catch (Exception e) {
+            Log.e("MAINSERVICE", cmd + " failed; " + e);
+        }
+    }
+
+    private void launchTcpdump() {
+        Date now = Calendar.getInstance().getTime();
+        DateFormat df = new SimpleDateFormat("yyyy-mm-dd-HH-mm-ss");
+        String newTcpdumpFileName = "passive_" + getDeviceId() + "_" + configId + "_" + df.format(now) + ".pcap";
+        String cmd2 = "( " + getTcpdumpCmd(newTcpdumpFileName) + " &)" ;
+        try {
+            Cmd.runAsRoot(cmd2);
+        } catch (Exception e) {
+            Log.e("MAINSERVICE", cmd2 + " failed; " + e);
+        }
+    }
+
+    private void killAndRelaunchTcpdump() {
+        killTcpdump();
+        launchTcpdump();
+    }
+
+    private static String getTcpdumpCmd(String outfile) {
+        File traceFolder = new File(Environment.getExternalStorageDirectory()
+                .getAbsolutePath(), TCPDUMP_TRACE_FOLDER);
+        if (!traceFolder.exists()) {
+            traceFolder.mkdir();
+        }
+
+        if (!traceFolder.isDirectory()) {
+            Log.e("MAINSERVICE", "A nasty thing occured! traceFolder is not a directory! " + traceFolder.getAbsolutePath());
+        }
+
+        File traceFile = new File(traceFolder, outfile);
+        if (traceFile.exists()) {
+            Log.e("MAINSERVICE", "A nasty thing occured! traceFile exists! " + traceFile.getAbsolutePath());
+        }
+
+        // Very dirty fix...
+        return "tcpdump -i any -w " + traceFile.getAbsolutePath().replace("/0/", "/legacy/") + " -s 110 'not ip host 127.0.0.1'";
+    }
+
+    private File[] getReadyTraces() {
+        File traceFolder = new File(Environment.getExternalStorageDirectory()
+                .getAbsolutePath(), TCPDUMP_TRACE_FOLDER);
+        if (!traceFolder.exists() || !traceFolder.isDirectory()) {
+            return null;
+        }
+        return traceFolder.listFiles();
+    }
+
+    private void sendTraces(File[] tracesToSend) {
+        // TODO
+        if (tracesToSend == null)
+            return;
+        for (int i = 0; i < tracesToSend.length; i++) {
+            if (tracesToSend[i].isFile()) {
+                Log.d("MAINSERVICE", "File " + tracesToSend[i].getName());
+            } else if (tracesToSend[i].isDirectory()) {
+                Log.d("MAINSERVICE", "Directory " + tracesToSend[i].getName());
+            }
+        }
+    }
+
+    public void configureAndReschedule() {
+        if (checkConfigFile()) {
+            configure();
+            writeConfigFile();
+            File[] tracesToSend = getReadyTraces();
+            killAndRelaunchTcpdump();
+            reschedule();
+            sendTraces(tracesToSend);
+        } else {
+            // Check if pid of tcpdump is still alive
+            // If not, launch a new instance of tcpdump
+            // First check if the file exists
+            // Notice that in this particular case, it's very difficult to send the traces...
+            Date now = Calendar.getInstance().getTime();
+            DateFormat df = new SimpleDateFormat("yyyy-mm-dd-HH-mm-ss");
+            String newTcpdumpFileName = "passive_" + getDeviceId() + "_" + configId + "_" + df.format(now) + ".pcap";
+            String cmd = "PROCESS_NUM=$(ps | grep tcpdump | grep -v grep | wc -l); " +
+                    "if [ $PROCESS_NUM -eq 0 ]; then (" + getTcpdumpCmd(newTcpdumpFileName) + "&) ;" +
+                    " fi";
+            try {
+                Cmd.runAsRoot(cmd);
+            } catch (Exception e) {
+                Log.e("MAINSERVICE", cmd + " failed; " + e);
+            }
+            reschedule();
+        }
+    }
 
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		return START_REDELIVER_INTENT;
-	}
 
-	public void onDestroy() {
-		super.onDestroy();
-		if (mpctrl != null) {
-			Manager.destroy(getApplicationContext());
-			Log.i(Manager.TAG, "Destroy service");
-		}
-	}
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_REDELIVER_INTENT;
+    }
+
+    public void onDestroy() {
+        super.onDestroy();
+        if (mpctrl != null) {
+            Manager.destroy(getApplicationContext());
+            Log.i(Manager.TAG, "Destroy service");
+        }
+    }
 }
