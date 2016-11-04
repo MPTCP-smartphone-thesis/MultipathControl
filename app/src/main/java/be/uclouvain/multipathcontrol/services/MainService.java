@@ -22,14 +22,24 @@ package be.uclouvain.multipathcontrol.services;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Environment;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.security.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -40,12 +50,16 @@ import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.system.Cmd;
 
 public class MainService extends Service {
+	public static final String CONFIG_FILE = "mptcp_ctrl.conf";
+	private static final String SERVER_IP = "PUT YOUR IP HERE"; // Nothing better found now...
 	private static final int NB_CONFIGS = 4;
     private static final boolean[] DATA_BACKUP = {false, true, true, true};
     private static final String[] TCP_RETRIES3 = {"16", "16", "16", "16"};
     private static final String[] MPTCP_ACTIVE_BK = {"0", "0", "0", "1"};
     private static final String[] MPTCP_OLD_BK = {"0", "0", "1", "0"};
     private static final String[] OPEN_BUP = {"1", "1", "1", "0"};
+
+	private static final long THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
 	private MPCtrl mpctrl;
 	private Random generator;
@@ -94,6 +108,56 @@ public class MainService extends Service {
 		return configId;
 	}
 
+	public Date getDateCurrentTimeZone(long timestamp) {
+		try{
+			Calendar calendar = Calendar.getInstance();
+			TimeZone tz = TimeZone.getDefault();
+			calendar.setTimeInMillis(timestamp * 1000);
+			calendar.add(Calendar.MILLISECOND, tz.getOffset(calendar.getTimeInMillis()));
+			return calendar.getTime();
+		}catch (Exception e) {
+		}
+		return null;
+	}
+
+	private boolean checkConfigFile() {
+		/* Return true if the configuration can be changed */
+		final File file = new File(Environment.getExternalStorageDirectory()
+				.getAbsolutePath(), CONFIG_FILE);
+		if (!file.exists()) {
+			Log.d("MAINSERVICE", "Config file not found");
+			return true;
+		}
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(file));
+			configId = Integer.parseInt(br.readLine());
+			String serverIp = br.readLine();
+			Date lastModified = getDateCurrentTimeZone(Long.parseLong(br.readLine()));
+
+			// If less than 3 hours, don't change the config
+			if (getDateDiff(lastModified, new Date(), TimeUnit.MILLISECONDS) <= THREE_HOURS_MS)
+				return false;
+
+		} catch (FileNotFoundException e) {
+			Log.e("MAINSERVICE", "Config file not found but file exists...");
+			return true;
+		} catch (IOException e) {
+			Log.e("MAINSERVICE", "IOException: " + e);
+			return true;
+		} catch (NumberFormatException e) {
+			Log.e("MAINSERVICE", "NumberFormatException: " + e);
+			return true;
+		} finally {
+			try {
+				// Don't forget to close the file!
+				if (br != null)
+					br.close();
+			} catch (IOException e) {}
+		}
+		return true;
+	}
+
 	private void configure() {
 		// Select random number
 		configId = generator.nextInt(NB_CONFIGS);
@@ -109,6 +173,21 @@ public class MainService extends Service {
         } catch (Exception e) {
             Log.e("MAINSERVICE", "Holy shit: " + e.toString());
         }
+	}
+
+	private void writeConfigFile() {
+		File file = new File(Environment.getExternalStorageDirectory()
+				.getAbsolutePath(), CONFIG_FILE);
+		try {
+			PrintWriter pw = new PrintWriter(new FileWriter(file, false));
+			pw.println(configId);
+			pw.println(SERVER_IP);
+			pw.println(System.currentTimeMillis());
+			pw.close();
+		} catch(IOException e) {
+			Log.e("MAINSERVICE", "IOException: " + e);
+		}
+
 	}
 
 	/**
@@ -146,8 +225,11 @@ public class MainService extends Service {
 	}
 
 	public void configureAndReschedule() {
-		configure();
-		reschedule();
+		if (checkConfigFile()) {
+			configure();
+			writeConfigFile();
+			reschedule();
+		}
 	}
 
 

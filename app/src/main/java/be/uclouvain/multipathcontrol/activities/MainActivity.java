@@ -23,6 +23,7 @@ package be.uclouvain.multipathcontrol.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,6 +33,15 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
 import be.uclouvain.multipathcontrol.MPCtrl;
 import be.uclouvain.multipathcontrol.R;
 import be.uclouvain.multipathcontrol.global.Config;
@@ -39,6 +49,8 @@ import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.services.MainService;
 import be.uclouvain.multipathcontrol.stats.JSONSender;
 import be.uclouvain.multipathcontrol.system.Sysctl;
+
+import static be.uclouvain.multipathcontrol.services.MainService.getDateDiff;
 
 public class MainActivity extends Activity {
 
@@ -52,7 +64,31 @@ public class MainActivity extends Activity {
 	private Switch trackingSwitch;
 	private Switch trackingSecSwitch;
 	private Button tcpCCButton;
-	private TextView configId;
+	private TextView configIdText;
+
+	private static int getConfigId() {
+		/* Return the current configId or -1 */
+		final File file = new File(Environment.getExternalStorageDirectory()
+				.getAbsolutePath(), MainService.CONFIG_FILE);
+		int configId = -1;
+		if (!file.exists()) {
+			return configId;
+		}
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			configId = Integer.parseInt(br.readLine());
+			// Don't forget to close the file!
+			br.close();
+
+		} catch (FileNotFoundException e) {
+			Log.e("MAINACTIVITY", "Config file not found but file exists...");
+		} catch (IOException e) {
+			Log.e("MAINACTIVITY", "IOException: " + e);
+		} catch (NumberFormatException e) {
+			Log.e("MAINACTIVITY", "NumberFormatException: " + e);
+		}
+		return configId;
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +104,7 @@ public class MainActivity extends Activity {
 		trackingSwitch = (Switch) findViewById(R.id.switch_tracking);
 		trackingSecSwitch = (Switch) findViewById(R.id.switch_tracking_sec);
 		tcpCCButton = (Button) findViewById(R.id.button_tcp_cc);
-		configId = (TextView) findViewById(R.id.textview_config_id);
+		configIdText = (TextView) findViewById(R.id.textview_config_id);
 
 		mpctrl = Manager.create(getApplicationContext());
 		if (mpctrl == null) {
@@ -79,10 +115,10 @@ public class MainActivity extends Activity {
 		}
 
 		// do that now, to avoid useless call to onCheckedChangeListerner
-		setChecked();
 		// start a new service if needed
-		if (MainService.getService() == null)
-			startService(new Intent(this, MainService.class));
+		startService(new Intent(this, MainService.class));
+
+		setChecked();
 		multiIfaceSwitch
 				.setOnCheckedChangeListener(onCheckedChangeListernerMultiIface);
 		defaultDataSwitch.setClickable(false);
@@ -112,10 +148,8 @@ public class MainActivity extends Activity {
 
 		Config.updateDynamicConfig();
 		setChecked();
-		if (MainService.getService() != null)
-			configId.setText("ConfigId: " + String.valueOf(MainService.getService().getConfigNumber()));
-		else
-			Log.d("MAIN", "Seems something is wrond");
+		int configId = getConfigId();
+		configIdText.setText("ConfigId: " + String.valueOf(configId));
 	}
 
 	protected void onDestroy() {
