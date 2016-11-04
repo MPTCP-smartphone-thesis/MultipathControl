@@ -30,6 +30,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 import be.uclouvain.multipathcontrol.MPCtrl;
 import be.uclouvain.multipathcontrol.R;
@@ -51,6 +52,7 @@ public class MainActivity extends Activity {
 	private Switch trackingSwitch;
 	private Switch trackingSecSwitch;
 	private Button tcpCCButton;
+	private TextView configId;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +68,7 @@ public class MainActivity extends Activity {
 		trackingSwitch = (Switch) findViewById(R.id.switch_tracking);
 		trackingSecSwitch = (Switch) findViewById(R.id.switch_tracking_sec);
 		tcpCCButton = (Button) findViewById(R.id.button_tcp_cc);
+		configId = (TextView) findViewById(R.id.textview_config_id);
 
 		mpctrl = Manager.create(getApplicationContext());
 		if (mpctrl == null) {
@@ -77,12 +80,17 @@ public class MainActivity extends Activity {
 
 		// do that now, to avoid useless call to onCheckedChangeListerner
 		setChecked();
+		// start a new service if needed
+		if (MainService.getService() == null)
+			startService(new Intent(this, MainService.class));
 		multiIfaceSwitch
 				.setOnCheckedChangeListener(onCheckedChangeListernerMultiIface);
-		defaultDataSwitch
-				.setOnCheckedChangeListener(onCheckedChangeListernerDefaultData);
-		dataBackupSwitch
-				.setOnCheckedChangeListener(onCheckedChangeListernerDataBackup);
+		defaultDataSwitch.setClickable(false);
+		//defaultDataSwitch
+		//		.setOnCheckedChangeListener(onCheckedChangeListernerDefaultData);
+		dataBackupSwitch.setClickable(false);
+		//dataBackupSwitch
+		//		.setOnCheckedChangeListener(onCheckedChangeListernerDataBackup);
 		saveBatterySwitch
 				.setOnCheckedChangeListener(onCheckedChangeListernerSaveBattery);
 		ipv6Switch.setOnCheckedChangeListener(onCheckedChangeListernerIPv6);
@@ -96,10 +104,6 @@ public class MainActivity extends Activity {
 
 		Button testButton = (Button) findViewById(R.id.button_send_data);
 		testButton.setOnClickListener(onClickListenerSend);
-
-
-		// start a new service if needed
-		startService(new Intent(this, MainService.class));
 	}
 
 	@Override
@@ -108,6 +112,10 @@ public class MainActivity extends Activity {
 
 		Config.updateDynamicConfig();
 		setChecked();
+		if (MainService.getService() != null)
+			configId.setText("ConfigId: " + String.valueOf(MainService.getService().getConfigNumber()));
+		else
+			Log.d("MAIN", "Seems something is wrond");
 	}
 
 	protected void onDestroy() {

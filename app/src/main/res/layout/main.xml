@@ -15,7 +15,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/switch_multiiface"
-        android:text="@string/switch_multiiface" />
+        android:text="@string/switch_multiiface"
+        android:checked="false" />
 
     <Switch
         android:id="@+id/switch_default_data"
@@ -128,5 +129,13 @@
         android:layout_marginTop="5dp"
         android:text="@string/button_send_data"
         android:visibility="visible" />
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textview_config_id"
+        android:layout_above="@+id/switch_default_data"
+        android:layout_alignEnd="@+id/text_data_backup_desc" />
 
 </RelativeLayout>
