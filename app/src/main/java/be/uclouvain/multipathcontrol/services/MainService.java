@@ -28,18 +28,32 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.Timer;
@@ -51,10 +65,14 @@ import be.uclouvain.multipathcontrol.global.Config;
 import be.uclouvain.multipathcontrol.global.Manager;
 import be.uclouvain.multipathcontrol.system.Cmd;
 
+import static be.uclouvain.multipathcontrol.utils.JSONUtils.getJsonObjectFromMap;
+
 public class MainService extends Service {
     public static final String CONFIG_FILE = "mptcp_ctrl.conf";
     private static final String TCPDUMP_TRACE_FOLDER = "mptcp_ctrl_traces";
     private static final String SERVER_IP = "PUT YOUR IP HERE"; // Nothing better found now...
+    public static final String COLLECT_SERVER_IP = "PUT YOUR COLLECTOR IP HERE";
+    public static final int COLLECT_SERVER_PORT = 80;
     private static final int NB_CONFIGS = 4;
     private static final boolean[] DATA_BACKUP = {false, true, true, true};
     private static final String[] TCP_RETRIES3 = {"16", "16", "16", "16"};
@@ -136,7 +154,7 @@ public class MainService extends Service {
             br = new BufferedReader(new FileReader(file));
             configId = Integer.parseInt(br.readLine());
             String serverIp = br.readLine();
-            Date lastModified = getDateCurrentTimeZone(Long.parseLong(br.readLine()));
+            Date lastModified = getDateCurrentTimeZone(Long.parseLong(br.readLine()) / 1000);
 
             // If less than 3 hours, don't change the config
             if (getDateDiff(lastModified, Calendar.getInstance().getTime(), TimeUnit.MILLISECONDS) <= THREE_HOURS_MS)
@@ -236,10 +254,14 @@ public class MainService extends Service {
         }
     }
 
-    private void launchTcpdump() {
+    private String getTcpdumpFileName() {
         Date now = Calendar.getInstance().getTime();
         DateFormat df = new SimpleDateFormat("yyyy-mm-dd-HH-mm-ss");
-        String newTcpdumpFileName = "passive_" + getDeviceId() + "_" + configId + "_" + df.format(now) + ".pcap";
+        return SERVER_IP + "_" + getDeviceId() + "_" + configId + "_passive-" + df.format(now) + ".pcap";
+    }
+
+    private void launchTcpdump() {
+        String newTcpdumpFileName = getTcpdumpFileName();
         String cmd2 = "( " + getTcpdumpCmd(newTcpdumpFileName) + " &)" ;
         try {
             Cmd.runAsRoot(cmd2);
@@ -270,7 +292,7 @@ public class MainService extends Service {
         }
 
         // Very dirty fix...
-        return "tcpdump -i any -w " + traceFile.getAbsolutePath().replace("/0/", "/legacy/") + " -s 110 'not ip host 127.0.0.1'";
+        return "tcpdump -i any -w " + traceFile.getAbsolutePath().replace("/0/", "/legacy/") + " -s 110 'tcp and not ip host 127.0.0.1 and not ip host 10.0.0.2'";
     }
 
     private File[] getReadyTraces() {
@@ -282,35 +304,210 @@ public class MainService extends Service {
         return traceFolder.listFiles();
     }
 
+    public boolean post(String path, File file) {
+        HttpURLConnection urlConnection;
+        String result = null;
+        int length = 4096;
+        int read;
+        byte[] bytes = new byte[length];
+        try {
+            //Connect
+            urlConnection = (HttpURLConnection) ((new URL("http://" + COLLECT_SERVER_IP + ":" + COLLECT_SERVER_PORT + "/PATH/TO/UPLOAD/YOUR/SMARTPHONE/TRACE/" + path + "/").openConnection()));
+            urlConnection.setDoOutput(true);
+            urlConnection.setDoInput(true);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/octet-stream");
+            urlConnection.setRequestProperty("Accept", "application/json");
+            urlConnection.setRequestProperty("Connection", "Keep-Alive");
+            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
+
+            OutputStream os = urlConnection.getOutputStream();
+            while ((read = buf.read(bytes, 0, bytes.length)) > 0) {
+                os.write(bytes, 0, bytes.length);
+            }
+            os.flush();
+            os.close();
+            //urlConnection.connect();
+
+
+            int status = urlConnection.getResponseCode();
+            Log.d("TCPClient", "status is " + status);
+
+            //Read
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
+
+            String line = null;
+            StringBuilder sb = new StringBuilder();
+
+            while ((line = bufferedReader.readLine()) != null) {
+                sb.append(line);
+            }
+
+            bufferedReader.close();
+            result = sb.toString();
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException g) {}
+            return post(path, file);
+        } catch (IOException e) {
+            e.printStackTrace();
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException g) {}
+            return post(path, file);
+        }
+        Log.d("TCPClient", "result is " + result);
+        return true;
+    }
+
+    private Map getMetadata(File file) {
+        Map map = new HashMap();
+        String[] elems = file.getName().split("_");
+        map.put("trace_user_name", file.getName());
+        map.put("uploader_email", elems[2] + "@" + elems[1] + "." + elems[0]);
+        map.put("smartphone", true);
+        return map;
+    }
+
+    public static String makeRequest(String uri, String json) {
+        HttpURLConnection urlConnection;
+        String url;
+        String data = json;
+        String result = null;
+        try {
+            //Connect
+            urlConnection = (HttpURLConnection) ((new URL(uri).openConnection()));
+            urlConnection.setDoOutput(true);
+            urlConnection.setDoInput(true);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.setRequestProperty("Accept", "application/json");
+            //urlConnection.connect();
+
+            //Write
+            OutputStream outputStream = urlConnection.getOutputStream();
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
+            writer.write(data);
+            writer.close();
+            outputStream.close();
+
+            int status = urlConnection.getResponseCode();
+            Log.d("TCPClient", "status is " + status);
+
+            //Read
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
+
+            String line = null;
+            StringBuilder sb = new StringBuilder();
+
+            while ((line = bufferedReader.readLine()) != null) {
+                sb.append(line);
+            }
+
+            bufferedReader.close();
+            result = sb.toString();
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException f) {}
+            return makeRequest(uri, json);
+        } catch (IOException e) {
+            e.printStackTrace();
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException g) {}
+            return makeRequest(uri, json);
+        }
+        Log.d("TCPClient", "result is " + result);
+        return result;
+    }
+
+    private String sendMetadata(File file) {
+        Map params = getMetadata(file);
+        String returnedJson = null;
+        try {
+            JSONObject holder = getJsonObjectFromMap(params);
+            Log.d("HOLDER", holder.toString());
+            returnedJson = makeRequest("http://" + COLLECT_SERVER_IP + ":" + COLLECT_SERVER_PORT + "/collect/save_test/", holder.toString());
+        } catch (JSONException e) {
+
+        }
+        return returnedJson;
+    }
+
+    private static void fixTcpdumpFile(File f) {
+        String cmd = "pcapfix -o fixed.pcap " + f.getAbsolutePath().replace("/0/", "/legacy/");
+        try {
+            Cmd.runAsRootSafe(cmd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String cmd2 = "mv fixed.pcap " + f.getAbsolutePath().replace("/0/", "/legacy/");
+        try {
+            Cmd.runAsRootSafe(cmd2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendTrace(File file) throws JSONException {
+        // First fix the trace!
+        fixTcpdumpFile(file);
+        String jsonResponse = sendMetadata(file);
+        JSONObject mainObject = new JSONObject(jsonResponse);
+        String path = mainObject.getString("store_path");
+        post(path, file);
+    }
+
     private void sendTraces(File[] tracesToSend) {
         // TODO
         if (tracesToSend == null)
             return;
         for (int i = 0; i < tracesToSend.length; i++) {
             if (tracesToSend[i].isFile()) {
-                Log.d("MAINSERVICE", "File " + tracesToSend[i].getName());
+                try{
+                    sendTrace(tracesToSend[i]);
+                } catch (JSONException e) {}
             } else if (tracesToSend[i].isDirectory()) {
                 Log.d("MAINSERVICE", "Directory " + tracesToSend[i].getName());
             }
         }
+        Log.d("MAINSERVICE", "Good job!");
+        for (int i = 0; i < tracesToSend.length; i++) {
+            tracesToSend[i].delete();
+        }
     }
 
     public void configureAndReschedule() {
+        Log.d("MAINSERVICE", "In configureAndReschedule");
         if (checkConfigFile()) {
-            configure();
-            writeConfigFile();
-            File[] tracesToSend = getReadyTraces();
-            killAndRelaunchTcpdump();
-            reschedule();
-            sendTraces(tracesToSend);
+            Log.d("MAINSERVICE", "ConfigFile must change!");
+            new Thread(new Runnable() {
+                public void run() {
+                    configure();
+                    writeConfigFile();
+                    File[] tracesToSend = getReadyTraces();
+                    killAndRelaunchTcpdump();
+                    try  {
+                        // Wait for full config
+                        Thread.sleep(20000);
+                    } catch (InterruptedException e) {}
+                    reschedule();
+                    sendTraces(tracesToSend);
+                }
+            }).start();
         } else {
+            Log.d("MAINSERVICE", "ConfigFile should not be changed!");
             // Check if pid of tcpdump is still alive
             // If not, launch a new instance of tcpdump
             // First check if the file exists
             // Notice that in this particular case, it's very difficult to send the traces...
-            Date now = Calendar.getInstance().getTime();
-            DateFormat df = new SimpleDateFormat("yyyy-mm-dd-HH-mm-ss");
-            String newTcpdumpFileName = "passive_" + getDeviceId() + "_" + configId + "_" + df.format(now) + ".pcap";
+            String newTcpdumpFileName = getTcpdumpFileName();
             String cmd = "PROCESS_NUM=$(ps | grep tcpdump | grep -v grep | wc -l); " +
                     "if [ $PROCESS_NUM -eq 0 ]; then (" + getTcpdumpCmd(newTcpdumpFileName) + "&) ;" +
                     " fi";
