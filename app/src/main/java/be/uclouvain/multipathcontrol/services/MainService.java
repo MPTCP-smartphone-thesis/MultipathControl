@@ -46,6 +46,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.security.Timestamp;
 import java.text.DateFormat;
@@ -256,17 +257,17 @@ public class MainService extends Service {
 
     private String getTcpdumpFileName() {
         Date now = Calendar.getInstance().getTime();
-        DateFormat df = new SimpleDateFormat("yyyy-mm-dd-HH-mm-ss");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         return SERVER_IP + "_" + getDeviceId() + "_" + configId + "_passive-" + df.format(now) + ".pcap";
     }
 
     private void launchTcpdump() {
         String newTcpdumpFileName = getTcpdumpFileName();
-        String cmd2 = "( " + getTcpdumpCmd(newTcpdumpFileName) + " &)" ;
+        String cmd = "( " + getTcpdumpCmd(newTcpdumpFileName) + " &)" ;
         try {
-            Cmd.runAsRoot(cmd2);
+            Cmd.runAsRoot(cmd);
         } catch (Exception e) {
-            Log.e("MAINSERVICE", cmd2 + " failed; " + e);
+            Log.e("MAINSERVICE", cmd + " failed; " + e);
         }
     }
 
@@ -308,25 +309,44 @@ public class MainService extends Service {
         HttpURLConnection urlConnection;
         String result = null;
         int length = 4096;
-        int read;
+        int read, bytesAvailable, bufferSize;
+        int totalRead = 0;
         byte[] bytes = new byte[length];
         try {
+            FileInputStream fis = new FileInputStream(file);
+            Log.i("FILE", "" + fis.getChannel().size());
             //Connect
             urlConnection = (HttpURLConnection) ((new URL("http://" + COLLECT_SERVER_IP + ":" + COLLECT_SERVER_PORT + "/PATH/TO/UPLOAD/YOUR/SMARTPHONE/TRACE/" + path + "/").openConnection()));
             urlConnection.setDoOutput(true);
             urlConnection.setDoInput(true);
+            urlConnection.setUseCaches(false);
+            urlConnection.setFixedLengthStreamingMode(fis.getChannel().size());
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/octet-stream");
             urlConnection.setRequestProperty("Accept", "application/json");
+            urlConnection.addRequestProperty("Content-length", fis.getChannel().size()+"");
             urlConnection.setRequestProperty("Connection", "Keep-Alive");
-            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
 
             OutputStream os = urlConnection.getOutputStream();
-            while ((read = buf.read(bytes, 0, bytes.length)) > 0) {
-                os.write(bytes, 0, bytes.length);
+            bytesAvailable = fis.available();
+            bufferSize = Math.min(bytesAvailable, length);
+            while ((read = fis.read(bytes, 0, bufferSize)) > 0) {
+                totalRead += read;
+                try {
+                    os.write(bytes, 0, bufferSize);
+                } catch (ProtocolException e) {
+                    Log.d("ProtocolException1", e.getMessage());
+                }
+                bytesAvailable = fis.available();
+                bufferSize = Math.min(bytesAvailable, length);
             }
-            os.flush();
-            os.close();
+            Log.i("TOTALREAD", totalRead + " bytes");
+            try {
+                os.flush();
+                os.close();
+            } catch (ProtocolException e) {
+                Log.d("ProtocolException2", e.getMessage());
+            }
             //urlConnection.connect();
 
 
@@ -440,14 +460,16 @@ public class MainService extends Service {
         return returnedJson;
     }
 
-    private static void fixTcpdumpFile(File f) {
-        String cmd = "pcapfix -o fixed.pcap " + f.getAbsolutePath().replace("/0/", "/legacy/");
+    public static void fixTcpdumpFile(File f) {
+        File fixFile = new File(Environment.getExternalStorageDirectory()
+                .getAbsolutePath(), "fixed_passive.pcap");
+        String cmd = "pcapfix -t 113 -o " + fixFile.getAbsolutePath().replace("/0/", "/legacy/") + " " + f.getAbsolutePath().replace("/0/", "/legacy/");
         try {
             Cmd.runAsRootSafe(cmd);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String cmd2 = "mv fixed.pcap " + f.getAbsolutePath().replace("/0/", "/legacy/");
+        String cmd2 = "cp " + fixFile.getAbsolutePath().replace("/0/", "/legacy/") + " " + f.getAbsolutePath().replace("/0/", "/legacy/");
         try {
             Cmd.runAsRootSafe(cmd2);
         } catch (Exception e) {
@@ -457,7 +479,8 @@ public class MainService extends Service {
 
     private void sendTrace(File file) throws JSONException {
         // First fix the trace!
-        fixTcpdumpFile(file);
+        // Don't fix it if it's a passive trace!
+        // fixTcpdumpFile(file);
         String jsonResponse = sendMetadata(file);
         JSONObject mainObject = new JSONObject(jsonResponse);
         String path = mainObject.getString("store_path");
