@@ -488,22 +488,19 @@ public class MainService extends Service {
     }
 
     private void sendTraces(File[] tracesToSend) {
-        // TODO
         if (tracesToSend == null)
             return;
         for (int i = 0; i < tracesToSend.length; i++) {
             if (tracesToSend[i].isFile()) {
                 try{
                     sendTrace(tracesToSend[i]);
+                    tracesToSend[i].delete();
                 } catch (JSONException e) {}
             } else if (tracesToSend[i].isDirectory()) {
                 Log.d("MAINSERVICE", "Directory " + tracesToSend[i].getName());
             }
         }
         Log.d("MAINSERVICE", "Good job!");
-        for (int i = 0; i < tracesToSend.length; i++) {
-            tracesToSend[i].delete();
-        }
     }
 
     public void configureAndReschedule() {
