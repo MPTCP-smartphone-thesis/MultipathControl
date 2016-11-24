@@ -45,6 +45,7 @@ public class Cmd {
 	public static void runAsRootSafe(String cmd) throws Exception {
 		try {
 			Process p = runAsRoot(cmd);
+			p.waitFor();
 			p.getInputStream().close();
 			p.getErrorStream().close();
 			p.getOutputStream().close();
