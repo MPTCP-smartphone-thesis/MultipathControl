@@ -296,7 +296,7 @@ public class MainService extends Service {
         }
 
         // Very dirty fix...
-        return "tcpdump -i any -w " + traceFile.getAbsolutePath().replace("/0/", "/legacy/") + " -s 110 'tcp and not ip host 127.0.0.1 and not ip host 10.0.0.2'";
+        return "tcpdump -i any -w " + traceFile.getAbsolutePath().replace("/0/", "/legacy/") + " -s 110 'tcp and not ip host 127.0.0.1 and not ip host 10.0.0.2 and not ip host 10.0.1.2'";
     }
 
     private File[] getReadyTraces() {
