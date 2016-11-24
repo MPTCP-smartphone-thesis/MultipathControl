@@ -21,7 +21,10 @@
 package be.uclouvain.multipathcontrol.services;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Environment;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -312,6 +315,17 @@ public class MainService extends Service {
         int read, bytesAvailable, bufferSize;
         int totalRead = 0;
         byte[] bytes = new byte[length];
+        // Ensure sending when WiFi is available
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        while (!mWifi.isConnected()) {
+            try {
+                Thread.sleep(5000);
+            }
+            catch (InterruptedException e) {}
+            mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        }
         try {
             FileInputStream fis = new FileInputStream(file);
             Log.i("FILE", "" + fis.getChannel().size());
