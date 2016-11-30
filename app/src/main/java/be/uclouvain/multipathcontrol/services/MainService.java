@@ -183,10 +183,14 @@ public class MainService extends Service {
         return true;
     }
 
-    private void configure() {
-        // Select random number
-        configId = generator.nextInt(NB_CONFIGS);
-        Log.d("MAINSERVICE", "Selected config " + configId);
+    private void configure(boolean random) {
+        // Select random number if no configId
+        if (random) {
+            configId = generator.nextInt(NB_CONFIGS);
+            Log.d("MAINSERVICE", "Selected config " + configId);
+        } else {
+            Log.d("MAINSERVICE", "Enforce config " + configId);
+        }
         mpctrl.setDataBackup(DATA_BACKUP[configId]);
         Config.dataBackup = DATA_BACKUP[configId];
         Config.saveStatus(this);
@@ -523,7 +527,7 @@ public class MainService extends Service {
             Log.d("MAINSERVICE", "ConfigFile must change!");
             new Thread(new Runnable() {
                 public void run() {
-                    configure();
+                    configure(true);
                     writeConfigFile();
                     File[] tracesToSend = getReadyTraces();
                     killAndRelaunchTcpdump();
@@ -536,7 +540,8 @@ public class MainService extends Service {
                 }
             }).start();
         } else {
-            Log.d("MAINSERVICE", "ConfigFile should not be changed!");
+            Log.d("MAINSERVICE", "ConfigFile should not be changed, but enforce it!");
+            configure(false);
             // Check if pid of tcpdump is still alive
             // If not, launch a new instance of tcpdump
             // First check if the file exists
