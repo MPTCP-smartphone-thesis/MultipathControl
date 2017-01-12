@@ -83,7 +83,9 @@ public class MainService extends Service {
     private static final String[] MPTCP_ACTIVE_BK = {"0", "0", "0", "1"};
     private static final String[] MPTCP_OLD_BK = {"0", "0", "1", "0"};
     private static final String[] OPEN_BUP = {"1", "1", "1", "0"};
-    private static final String[] KEEPALIVE_INTVL = {"75", "75", "75", "1"};
+    private static final String[] KEEPALIVE_INTVL = {"75", "75", "75", "0"};
+    private static final String[] KEEPALIVE_INTVL_MS = {"0", "0", "0", "500"};
+    private static final String[] KEEPALIVE_PROBES_FASTJOIN = {"10", "10", "10", "2"};
 
     private static final long THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
@@ -201,6 +203,8 @@ public class MainService extends Service {
             Cmd.runAsRootSafe("sysctl -w net.mptcp.mptcp_old_bk=" + MPTCP_OLD_BK[configId]);
             Cmd.runAsRootSafe("echo " + OPEN_BUP[configId] + " | tee /sys/module/mptcp_fullmesh/parameters/open_bup");
             Cmd.runAsRootSafe("sysctl -w net.ipv4.tcp_keepalive_intvl=" + KEEPALIVE_INTVL[configId]);
+            Cmd.runAsRootSafe("sysctl -w net.ipv4.tcp_keepalive_intvl_ms=" + KEEPALIVE_INTVL_MS[configId]);
+            Cmd.runAsRootSafe("sysctl -w net.mptcp.mptcp_keepalive_probes_fastjoin=" + KEEPALIVE_PROBES_FASTJOIN[configId]);
         } catch (Exception e) {
             Log.e("MAINSERVICE", "Holy shit: " + e.toString());
         }
