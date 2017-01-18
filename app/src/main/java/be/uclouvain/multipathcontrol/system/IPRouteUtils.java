@@ -42,6 +42,7 @@ public class IPRouteUtils {
 	// TODO: will not work when using 2 SIMs cards...
 	private static final String DEFAULT_DATA_IFACE = "rmnet0";
 	private static final String DEFAULT_WLAN_IFACE = "wlan0";
+	private static final String DEFAULT_VLAN_IFACE = "tun0";
 	private static final int ipVersions[] = { 4, 6 };
 
 	public static String getDefaultIFace() {
@@ -148,6 +149,7 @@ public class IPRouteUtils {
 			}
 		}
 		setDataBackup();
+		disableVlan();
 	}
 
 	public static boolean isWifi(String ifaceName) { return ifaceName.startsWith("wlan"); }
@@ -161,6 +163,10 @@ public class IPRouteUtils {
 	public static boolean isMobile(NetworkInterface iface) {
 		return isMobile(iface.getName());
 	}
+
+	public static boolean isVlan(String ifaceName)  { return ifaceName.startsWith("tun"); }
+
+	public static boolean isVlan(NetworkInterface iface) {return isVlan(iface.getName()); }
 
 	public static boolean isIPv6(String hostAddr) {
 		return hostAddr.contains(":");
@@ -198,6 +204,7 @@ public class IPRouteUtils {
 			return false;
 		}
 		setDataBackup();
+		disableVlan();
 		return true;
 	}
 
@@ -228,6 +235,7 @@ public class IPRouteUtils {
 			return false;
 		}
 		setDataBackup();
+		disableVlan();
 		return true;
 	}
 
@@ -238,6 +246,15 @@ public class IPRouteUtils {
 		String gateway = getGateway(iface);
 		String oGateway = getGateway(oface);
 		return setDefaultRoute(iface, gateway, true, true) && setDefaultRoute(oface, oGateway, true, false);
+	}
+
+	public static boolean disableVlan() {
+		try {
+			Cmd.runAsRootSafe("ip link set dev " + DEFAULT_VLAN_IFACE + " multipath off");
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
 	}
 
 	public static boolean setDataBackup() {
@@ -257,7 +274,7 @@ public class IPRouteUtils {
 	}
 
 	/**
-	 * @return a list of all active interfaces (up, not loopback, with IP)
+	 * @return a list of all active interfaces (up, not loopback, not vlan, with IP)
 	 */
 	public static List<NetworkInterface> getActiveIfaces() {
 		Enumeration<NetworkInterface> networkInterfaces;
@@ -273,7 +290,8 @@ public class IPRouteUtils {
 			NetworkInterface networkInterface = networkInterfaces.nextElement();
 			// all active interface, not loopback
 			try {
-				if (networkInterface.isUp() && !networkInterface.isLoopback()) {
+				if (networkInterface.isUp() && !networkInterface.isLoopback()
+						&& !isVlan(networkInterface)) {
 					Enumeration<InetAddress> inetAddresses = networkInterface
 							.getInetAddresses();
 					// only if it has address

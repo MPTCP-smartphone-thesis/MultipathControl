@@ -83,9 +83,10 @@ public class MainService extends Service {
     private static final String[] MPTCP_ACTIVE_BK = {"0", "0", "0", "1"};
     private static final String[] MPTCP_OLD_BK = {"0", "0", "1", "0"};
     private static final String[] OPEN_BUP = {"1", "1", "1", "0"};
-    private static final String[] KEEPALIVE_INTVL = {"75", "75", "75", "0"};
-    private static final String[] KEEPALIVE_INTVL_MS = {"0", "0", "0", "500"};
-    private static final String[] KEEPALIVE_PROBES_FASTJOIN = {"10", "10", "10", "2"};
+    private static final String[] SFS_PER_INTF = {"1", "1", "1", "1"};
+    //private static final String[] KEEPALIVE_INTVL = {"75", "75", "75", "0"};
+    //private static final String[] KEEPALIVE_INTVL_MS = {"0", "0", "0", "500"};
+    //private static final String[] KEEPALIVE_PROBES_FASTJOIN = {"10", "10", "10", "2"};
 
     private static final long THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
@@ -202,9 +203,10 @@ public class MainService extends Service {
             Cmd.runAsRootSafe("sysctl -w net.mptcp.mptcp_active_bk=" + MPTCP_ACTIVE_BK[configId]);
             Cmd.runAsRootSafe("sysctl -w net.mptcp.mptcp_old_bk=" + MPTCP_OLD_BK[configId]);
             Cmd.runAsRootSafe("echo " + OPEN_BUP[configId] + " | tee /sys/module/mptcp_fullmesh/parameters/open_bup");
-            Cmd.runAsRootSafe("sysctl -w net.ipv4.tcp_keepalive_intvl=" + KEEPALIVE_INTVL[configId]);
-            Cmd.runAsRootSafe("sysctl -w net.ipv4.tcp_keepalive_intvl_ms=" + KEEPALIVE_INTVL_MS[configId]);
-            Cmd.runAsRootSafe("sysctl -w net.mptcp.mptcp_keepalive_probes_fastjoin=" + KEEPALIVE_PROBES_FASTJOIN[configId]);
+            Cmd.runAsRootSafe("echo " + SFS_PER_INTF[configId] + " | tee /sys/module/mptcp_fullmesh/parameters/sfs_per_intf");
+            //Cmd.runAsRootSafe("sysctl -w net.ipv4.tcp_keepalive_intvl=" + KEEPALIVE_INTVL[configId]);
+            //Cmd.runAsRootSafe("sysctl -w net.ipv4.tcp_keepalive_intvl_ms=" + KEEPALIVE_INTVL_MS[configId]);
+            //Cmd.runAsRootSafe("sysctl -w net.mptcp.mptcp_keepalive_probes_fastjoin=" + KEEPALIVE_PROBES_FASTJOIN[configId]);
         } catch (Exception e) {
             Log.e("MAINSERVICE", "Holy shit: " + e.toString());
         }
@@ -305,8 +307,7 @@ public class MainService extends Service {
             Log.e("MAINSERVICE", "A nasty thing occured! traceFile exists! " + traceFile.getAbsolutePath());
         }
 
-        // Very dirty fix...
-        return "tcpdump -i any -w " + traceFile.getAbsolutePath().replace("/0/", "/legacy/") + " -s 110 'tcp and not ip host 127.0.0.1 and not ip host 10.0.0.2 and not ip host 10.0.1.2'";
+        return "tcpdump -i any -w " + traceFile.getAbsolutePath() + " -s 120 'tcp and not ip host 127.0.0.1 and not ip host 10.0.0.2 and not ip host 10.0.1.2 and not ip host 26.26.26.1'";
     }
 
     private File[] getReadyTraces() {
@@ -487,13 +488,13 @@ public class MainService extends Service {
     public static void fixTcpdumpFile(File f) {
         File fixFile = new File(Environment.getExternalStorageDirectory()
                 .getAbsolutePath(), "fixed_passive.pcap");
-        String cmd = "pcapfix -t 113 -o " + fixFile.getAbsolutePath().replace("/0/", "/legacy/") + " " + f.getAbsolutePath().replace("/0/", "/legacy/");
+        String cmd = "pcapfix -t 113 -o " + fixFile.getAbsolutePath() + " " + f.getAbsolutePath();
         try {
             Cmd.runAsRootSafe(cmd);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String cmd2 = "cp " + fixFile.getAbsolutePath().replace("/0/", "/legacy/") + " " + f.getAbsolutePath().replace("/0/", "/legacy/");
+        String cmd2 = "cp " + fixFile.getAbsolutePath() + " " + f.getAbsolutePath();
         try {
             Cmd.runAsRootSafe(cmd2);
         } catch (Exception e) {

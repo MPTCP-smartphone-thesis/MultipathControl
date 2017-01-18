@@ -66,7 +66,7 @@ public class Config {
 				!ConfigServer.hostname.isEmpty());
 
 		// Dynamic
-		ipv6 = settings.getBoolean(PREFS_IPV6, false);
+		ipv6 = settings.getBoolean(PREFS_IPV6, true);
 		if (ipv6 != Sysctl.getIPv6())
 			Sysctl.setIPv6(ipv6);
 

@@ -73,6 +73,8 @@ public class IPRoute {
 			counter -= 1;
 			if (counter > 0)
 				handler.postDelayed(this, 1000);
+			else
+				handler.postDelayed(this, 30000);
 		}
 	};
 

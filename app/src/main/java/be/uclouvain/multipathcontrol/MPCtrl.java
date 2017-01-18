@@ -217,11 +217,7 @@ public class MPCtrl {
 			String ifaceName = iface.getName();
 			Log.d(Manager.TAG, "restart iface: " + ifaceName);
 			try {
-				Process p = Cmd.runAsRoot("ip link set " + ifaceName + " down");
-				p.wait();
-				p.getInputStream().close();
-				p.getErrorStream().close();
-				p.getOutputStream().close();
+				Cmd.runAsRootSafe("ip link set " + ifaceName + " down");
 			} catch (Exception e) {
 				Log.w(Manager.TAG, "Error when disabling " + ifaceName + ": "
 						+ e.getMessage());
