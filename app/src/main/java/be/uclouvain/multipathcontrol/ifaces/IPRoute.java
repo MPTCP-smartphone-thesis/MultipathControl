@@ -40,6 +40,10 @@ import be.uclouvain.multipathcontrol.system.Cmd;
 import be.uclouvain.multipathcontrol.system.IPRouteUtils;
 import be.uclouvain.multipathcontrol.system.Sysctl;
 
+import static be.uclouvain.multipathcontrol.system.IPRouteUtils.disableDoze;
+import static be.uclouvain.multipathcontrol.system.IPRouteUtils.disableVlan;
+import static be.uclouvain.multipathcontrol.system.IPRouteUtils.seLinuxSetPermissive;
+
 public class IPRoute {
 
 	private final MobileDataMgr mobileDataMgr;
@@ -58,6 +62,9 @@ public class IPRoute {
 			if (counter == 0) {
 				counter = 5;
 			}
+			disableVlan();
+			disableDoze();
+			seLinuxSetPermissive();
 			List<String> cmdOutput = Cmd.getAllLines("ip route", false);
 			if (cmdOutput != null && cmdOutput.size() > 0) {
 				int count = 0;
@@ -74,7 +81,7 @@ public class IPRoute {
 			if (counter > 0)
 				handler.postDelayed(this, 1000);
 			else
-				handler.postDelayed(this, 30000);
+				handler.postDelayed(this, 60000);
 		}
 	};
 
@@ -94,11 +101,11 @@ public class IPRoute {
 	private void setupRule(NetworkInterface iface, boolean update) {
 		int table = IPRouteUtils.mapIfaceToTable(iface);
 
-		if (update)
-			IPRouteUtils.resetRule(iface);
-
 		if (iface.getInterfaceAddresses().isEmpty())
 			return;
+
+		if (update)
+			IPRouteUtils.resetRule(iface);
 
 		for (InterfaceAddress intfAddr : iface.getInterfaceAddresses()) {
 			InetAddress addr = intfAddr.getAddress();
@@ -205,7 +212,7 @@ public class IPRoute {
 		// But if Android does not stop the mobile interface, change default interface on every update
 		if (update || count != this.ifaceCount) {
 			IPRouteUtils.setDefaultRoute();
-			this.handler.postDelayed(difw, 1000);;
+			this.handler.postDelayed(difw, 1000);
 		}
 
 		this.ifaceCount = count;

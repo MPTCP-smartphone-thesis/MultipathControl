@@ -150,6 +150,8 @@ public class IPRouteUtils {
 		}
 		setDataBackup();
 		disableVlan();
+		disableDoze();
+		seLinuxSetPermissive();
 	}
 
 	public static boolean isWifi(String ifaceName) { return ifaceName.startsWith("wlan"); }
@@ -205,6 +207,8 @@ public class IPRouteUtils {
 		}
 		setDataBackup();
 		disableVlan();
+		disableDoze();
+		seLinuxSetPermissive();
 		return true;
 	}
 
@@ -236,6 +240,8 @@ public class IPRouteUtils {
 		}
 		setDataBackup();
 		disableVlan();
+		disableDoze();
+		seLinuxSetPermissive();
 		return true;
 	}
 
@@ -251,6 +257,27 @@ public class IPRouteUtils {
 	public static boolean disableVlan() {
 		try {
 			Cmd.runAsRootSafe("ip link set dev " + DEFAULT_VLAN_IFACE + " multipath off");
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
+
+	public static boolean disableDoze() {
+		try {
+			Cmd.runAsUserSafe("dumpsys deviceidle whitelist");
+			Cmd.runAsUserSafe("dumpsys deviceidle disable");
+			Cmd.runAsRootSafe("dumpsys deviceidle whitelist");
+			Cmd.runAsRootSafe("dumpsys deviceidle disable");
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
+
+	public static boolean seLinuxSetPermissive() {
+		try {
+			Cmd.runAsRootSafe("/system/bin/setenforce 0");
 		} catch (Exception e) {
 			return false;
 		}

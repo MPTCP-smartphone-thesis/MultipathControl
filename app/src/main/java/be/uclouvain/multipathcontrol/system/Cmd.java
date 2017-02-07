@@ -42,6 +42,18 @@ public class Cmd {
 		return Runtime.getRuntime().exec(new String[] { "su", "-c", cmd });
 	}
 
+	public static void runAsUserSafe(String cmd) throws Exception {
+		try {
+			Process p = runAsUser(cmd);
+			p.waitFor();
+			p.getInputStream().close();
+			p.getErrorStream().close();
+			p.getOutputStream().close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void runAsRootSafe(String cmd) throws Exception {
 		try {
 			Process p = runAsRoot(cmd);

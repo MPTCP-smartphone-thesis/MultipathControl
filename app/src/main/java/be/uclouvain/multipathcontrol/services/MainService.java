@@ -235,7 +235,7 @@ public class MainService extends Service {
      * @return the diff value, in the provided unit
      */
     public static long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
-        long diffInMillies = date2.getTime() - date1.getTime();
+        long diffInMillies = Math.abs(date2.getTime() - date1.getTime());
         return timeUnit.convert(diffInMillies, TimeUnit.MILLISECONDS);
     }
 
@@ -548,21 +548,31 @@ public class MainService extends Service {
             }).start();
         } else {
             Log.d("MAINSERVICE", "ConfigFile should not be changed, but enforce it!");
-            configure(false);
-            // Check if pid of tcpdump is still alive
-            // If not, launch a new instance of tcpdump
-            // First check if the file exists
-            // Notice that in this particular case, it's very difficult to send the traces...
-            String newTcpdumpFileName = getTcpdumpFileName();
-            String cmd = "PROCESS_NUM=$(ps | grep tcpdump | grep -v grep | wc -l); " +
-                    "if [ $PROCESS_NUM -eq 0 ]; then (" + getTcpdumpCmd(newTcpdumpFileName) + "&) ;" +
-                    " fi";
-            try {
-                Cmd.runAsRoot(cmd);
-            } catch (Exception e) {
-                Log.e("MAINSERVICE", cmd + " failed; " + e);
-            }
-            reschedule();
+            new Thread(new Runnable() {
+                public void run() {
+                    configure(false);
+                    // Check if pid of tcpdump is still alive
+                    // If not, launch a new instance of tcpdump
+                    // First check if the file exists
+                    // Notice that in this particular case, it's very difficult to send the traces...
+                    File[] tracesToSend = getReadyTraces();
+                    String newTcpdumpFileName = getTcpdumpFileName();
+                    String cmd = "PROCESS_NUM=$(ps | grep tcpdump | grep -v grep | wc -l); " +
+                            "if [ $PROCESS_NUM -eq 0 ]; then (" + getTcpdumpCmd(newTcpdumpFileName) + "&) ;" +
+                            " fi";
+                    try {
+                        Cmd.runAsRoot(cmd);
+                    } catch (Exception e) {
+                        Log.e("MAINSERVICE", cmd + " failed; " + e);
+                    }
+                    reschedule();
+                    // Check if a new file exist; if so, we can send previous traces!
+                    File[] tracesNow = getReadyTraces();
+                    if (tracesNow.length != tracesToSend.length && tracesToSend.length > 0) {
+                        // Ok, we can send traces!
+                        sendTraces(tracesToSend);
+                    }}
+            }).start();
         }
     }
 
