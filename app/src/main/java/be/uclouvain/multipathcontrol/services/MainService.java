@@ -84,6 +84,11 @@ public class MainService extends Service {
     private static final String[] MPTCP_OLD_BK = {"0", "0", "1", "0"};
     private static final String[] OPEN_BUP = {"1", "1", "1", "0"};
     private static final String[] SFS_PER_INTF = {"1", "1", "1", "1"};
+    private static final String[] SLOSS_THRESHOLD = {"0", "0", "0", "250"};
+    private static final String[] SRETRANS_THRESHOLD = {"0", "0", "0", "500"};
+    private static final String[] RTO_MS_THRESHOLD = {"0", "0", "0", "1500"};
+    private static final String[] IDLE_PERIODS_THRESHOLD = {"0", "0", "0", "0"};
+    private static final String[] TIMER_PERIOD_MS = {"500", "500", "500", "500"};
     //private static final String[] KEEPALIVE_INTVL = {"75", "75", "75", "0"};
     //private static final String[] KEEPALIVE_INTVL_MS = {"0", "0", "0", "500"};
     //private static final String[] KEEPALIVE_PROBES_FASTJOIN = {"10", "10", "10", "2"};
@@ -204,6 +209,12 @@ public class MainService extends Service {
             Cmd.runAsRootSafe("sysctl -w net.mptcp.mptcp_old_bk=" + MPTCP_OLD_BK[configId]);
             Cmd.runAsRootSafe("echo " + OPEN_BUP[configId] + " | tee /sys/module/mptcp_fullmesh/parameters/open_bup");
             Cmd.runAsRootSafe("echo " + SFS_PER_INTF[configId] + " | tee /sys/module/mptcp_fullmesh/parameters/sfs_per_intf");
+            // Don't forget to disable the oracle if config is not 3!
+            Cmd.runAsRootSafe("echo " + SLOSS_THRESHOLD[configId] + " | tee /sys/module/mptcp_oracle/parameters/sloss_threshold");
+            Cmd.runAsRootSafe("echo " + SRETRANS_THRESHOLD[configId] + " | tee /sys/module/mptcp_oracle/parameters/sretrans_threshold");
+            Cmd.runAsRootSafe("echo " + RTO_MS_THRESHOLD[configId] + " | tee /sys/module/mptcp_oracle/parameters/rto_ms_threshold");
+            Cmd.runAsRootSafe("echo " + IDLE_PERIODS_THRESHOLD[configId] + " | tee /sys/module/mptcp_oracle/parameters/idle_periods_threshold");
+            Cmd.runAsRootSafe("echo " + TIMER_PERIOD_MS[configId] + " | tee /sys/module/mptcp_oracle/parameters/timer_period_ms\"");
             //Cmd.runAsRootSafe("sysctl -w net.ipv4.tcp_keepalive_intvl=" + KEEPALIVE_INTVL[configId]);
             //Cmd.runAsRootSafe("sysctl -w net.ipv4.tcp_keepalive_intvl_ms=" + KEEPALIVE_INTVL_MS[configId]);
             //Cmd.runAsRootSafe("sysctl -w net.mptcp.mptcp_keepalive_probes_fastjoin=" + KEEPALIVE_PROBES_FASTJOIN[configId]);
