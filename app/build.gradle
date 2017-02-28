@@ -7,12 +7,14 @@ android {
     defaultConfig {
         applicationId "be.uclouvain.multipathcontrol"
         minSdkVersion 19
-        targetSdkVersion 19
+        targetSdkVersion 21
         useLibrary 'org.apache.http.legacy'
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7
             targetCompatibility JavaVersion.VERSION_1_7
         }
+        multiDexEnabled true
+
     }
 
     buildTypes {
@@ -21,9 +23,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
 }
 
 dependencies {
     compile 'com.android.support:support-v4:19.1.0'
-    compile 'com.google.android.gms:play-services:+'
+    compile 'com.google.android.gms:play-services:8.4.0'
 }
