@@ -193,6 +193,8 @@ public class MainService extends Service {
     }
 
     private void configure(boolean random) {
+        mpctrl.setDataBackup(Config.dataBackup);
+        /*
         // Select random number if no configId
         if (random) {
             configId = generator.nextInt(NB_CONFIGS) + 3;
@@ -221,6 +223,7 @@ public class MainService extends Service {
         } catch (Exception e) {
             Log.e("MAINSERVICE", "Holy shit: " + e.toString());
         }
+        */
     }
 
     private void writeConfigFile() {
@@ -540,6 +543,12 @@ public class MainService extends Service {
     }
 
     public void configureAndReschedule() {
+        new Thread(new Runnable() {
+            public void run() {
+                configure(false);
+            }
+        }).start();
+	    /*
         Log.d("MAINSERVICE", "In configureAndReschedule");
         if (checkConfigFile()) {
             Log.d("MAINSERVICE", "ConfigFile must change!");
@@ -585,6 +594,7 @@ public class MainService extends Service {
                     }}
             }).start();
         }
+	    */
     }
 
 
