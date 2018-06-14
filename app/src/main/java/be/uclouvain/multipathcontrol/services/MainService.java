@@ -77,7 +77,7 @@ public class MainService extends Service {
     private static final String SERVER_IP = "PUT YOUR IP HERE"; // Nothing better found now...
     public static final String COLLECT_SERVER_IP = "PUT YOUR COLLECTOR IP HERE";
     public static final int COLLECT_SERVER_PORT = 80;
-    private static final int NB_CONFIGS = 4;
+    private static final int NB_CONFIGS = 1;
     private static final boolean[] DATA_BACKUP = {false, true, true, true};
     private static final String[] TCP_RETRIES3 = {"16", "16", "16", "16"};
     private static final String[] MPTCP_ACTIVE_BK = {"0", "0", "0", "1"};
@@ -195,7 +195,7 @@ public class MainService extends Service {
     private void configure(boolean random) {
         // Select random number if no configId
         if (random) {
-            configId = generator.nextInt(NB_CONFIGS);
+            configId = generator.nextInt(NB_CONFIGS) + 3;
             Log.d("MAINSERVICE", "Selected config " + configId);
         } else {
             Log.d("MAINSERVICE", "Enforce config " + configId);
